@@ -1,0 +1,73 @@
+variables:
+stages:
+  - install
+  - audit
+  - lint
+  - test
+  - build
+  - test
+  - deploy
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+npm_install:
+  stage: install
+  tags:
+    - npm
+  script:
+    - npm install
+
+audit:
+  stage: audit
+  tags:
+    - npm
+  script:
+    - npm audit
+  allow_failure: true
+
+eslint:
+  stage: lint
+  tags:
+    - npm
+  script:
+    - npm run eslint
+  allow_failure: true
+
+test:
+  stage: test
+  tags:
+    - npm
+  script:
+    - npm run jest
+
+nmpbuild:
+  stage: build
+  tags:
+    - npm
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/wwpass.universal.min.js
+      - dist/wwpass.universal.js
+      - dist/wwpass.universal.min.js.map
+      - dist/wwpass.universal.js.map
+    name: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}"
+    expire_in: 3 months
+
+delpoy:
+  stage: deploy
+  tags:
+    - ubuild
+  script:
+    - scp dist/wwpass.universal.min.js uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.min.${CI_COMMIT_REF_SLUG}.${CI_COMMIT_SHA}.js
+    - scp dist/wwpass.universal.min.js uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.min.${CI_COMMIT_REF_SLUG}.latest.js
+    - scp dist/wwpass.universal.js uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.${CI_COMMIT_REF_SLUG}.${CI_COMMIT_SHA}.js
+    - scp dist/wwpass.universal.js uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.${CI_COMMIT_REF_SLUG}.latest.js
+    - scp dist/wwpass.universal.min.js.map uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.min.${CI_COMMIT_REF_SLUG}.${CI_COMMIT_SHA}.js.map
+    - scp dist/wwpass.universal.min.js.map uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.min.${CI_COMMIT_REF_SLUG}.latest.js.map
+    - scp dist/wwpass.universal.js.map uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.${CI_COMMIT_REF_SLUG}.${CI_COMMIT_SHA}.js.map
+    - scp dist/wwpass.universal.js.map uploader@hudson.wwpass.net:repository/cdn/wwpass.universal.${CI_COMMIT_REF_SLUG}.latest.js.map
