@@ -1,6 +1,6 @@
 # wwpass-frontend
 
-wwpass-frontend is a WWPass authentication and client-side encryption library.
+WWPass authentication and client-side encryption library.
 
 ## Install
 
