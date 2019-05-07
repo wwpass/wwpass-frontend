@@ -1,5 +1,6 @@
 {
   "name": "wwpass-frontend",
+  "license": "MIT",
   "version": "2.0.0",
   "description": "Frontend WWPass JavaScript Library",
   "scripts": {
