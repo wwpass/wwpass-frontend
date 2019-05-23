@@ -2,7 +2,7 @@ import { getWebSocketResult } from './qrcode/wwpass.websocket';
 import { getClientNonce } from './nonce';
 import { isClientKeyTicket } from './ticket';
 
-const getTicket = url => fetch(url).then((response) => {
+const getTicket = url => fetch(url, { cache: 'no-store' }).then((response) => {
   if (!response.ok) {
     throw Error(`Error fetching ticket from "${url}": ${response.statusText}`);
   }
@@ -16,7 +16,7 @@ const getTicket = url => fetch(url).then((response) => {
   The functions ultimately resolves to:
   {"ticket": "<new_ticket>", "ttl": <new_ticket_ttl>}
 */
-const updateTicket = url => fetch(url).then((response) => {
+const updateTicket = url => fetch(url, { cache: 'no-store' }).then((response) => {
   if (!response.ok) {
     throw Error(`Error updating ticket from "${url}": ${response.statusText}`);
   }
