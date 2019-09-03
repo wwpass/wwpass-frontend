@@ -139,7 +139,7 @@ const QRCodePromise = (
   ) => new Promise((resolve) => {
     let QRCodeElement = document.createElement('canvas');
     QRCode.toCanvas(QRCodeElement,
-      getUniversalURL(wwpassURLoptions, false),
+      getUniversalURL(wwpassURLoptions, true),
       qrcodeStyle || {}, (error) => {
         if (error) {
           throw error;
@@ -156,7 +156,7 @@ const QRCodePromise = (
     if (isMobile()) {
       // Wrapping QRCode canvas in <a>
       const universalLinkElement = document.createElement('a');
-      universalLinkElement.href = getUniversalURL(wwpassURLoptions);
+      universalLinkElement.href = getUniversalURL(wwpassURLoptions, false);
 
       universalLinkElement.appendChild(QRCodeElement);
       universalLinkElement.addEventListener('click', () => {

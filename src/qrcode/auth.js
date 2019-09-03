@@ -1,5 +1,5 @@
 import { getWebSocketResult, closeConnectionPool } from './wwpass.websocket';
-import { ticketAdapter } from '../ticket';
+import { ticketAdapter, getShortTicketForm } from '../ticket';
 import { getTicket } from '../getticket';
 import { encodeClientKey } from '../crypto';
 
@@ -73,6 +73,7 @@ const wwpassQRCodeAuth = (initialOptions) => {
     const wwpassURLoptions = {
       universal: options.universal,
       ticket,
+      shortTicket: getShortTicketForm(ticket),
       callbackURL: options.callbackURL,
       ppx: options.ppx,
       version: PROTOCOL_VERSION,

@@ -12,6 +12,14 @@ const isClientKeyTicket = (ticket) => {
   return flags.split('').some(element => element === 'c');
 };
 
+const getShortTicketForm = (ticket) => {
+  const SHORT_TICKET_LENGTH = 8; // bytes
+  const infoHost = ticket.split('@');
+  const spnameFlagsOTP = infoHost[0].split(':');
+  const otp = spnameFlagsOTP[spnameFlagsOTP.length - 1];
+  return `${spnameFlagsOTP[0]}:${spnameFlagsOTP.length === 3 ? `${spnameFlagsOTP[1]}:` : ''}${otp.substr(0, SHORT_TICKET_LENGTH * 2)}@${infoHost[1]}`;
+};
+
 const ticketAdapter = (response) => {
   if (response && response.data) {
     const ticket = Object.assign({}, {
@@ -25,4 +33,4 @@ const ticketAdapter = (response) => {
   return response;
 };
 
-export { isClientKeyTicket, ticketAdapter };
+export { isClientKeyTicket, ticketAdapter, getShortTicketForm };
