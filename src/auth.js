@@ -1,6 +1,12 @@
 import { wwpassQRCodeAuth } from './qrcode/auth';
 import { wwpassPasskeyAuth } from './passkey/auth';
 
+const absolutePath = (href) => {
+  const link = document.createElement('a');
+  link.href = href;
+  return link.href;
+};
+
 const authInit = (initialOptions) => {
   const defaultOptions = {
     ticketURL: '',
@@ -12,6 +18,7 @@ const authInit = (initialOptions) => {
   };
 
   const options = Object.assign({}, defaultOptions, initialOptions);
+  options.callbackURL = absolutePath(options.callbackURL);
   options.passkeyButton = (typeof options.passkey === 'string') ? document.querySelector(options.passkey) : options.passkey;
   options.qrcode = (typeof options.qrcode === 'string') ? document.querySelector(options.qrcode) : options.qrcode;
 

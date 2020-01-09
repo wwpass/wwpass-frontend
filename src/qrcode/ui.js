@@ -4,9 +4,10 @@ import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
 
 
-const isMobile = () => navigator &&
-    'userAgent' in navigator &&
-    navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
+const isMobile = () => navigator && (
+      ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i)) ||
+      (navigator.maxTouchPoints > 1)
+    ) && !window.MSStream;
 
 const removeLoader = (element) => {
   while (element.firstChild) {
@@ -25,7 +26,7 @@ const setLoader = (element, styles) => {
   <div class="${loaderClass}_blk"></div>`;
   if (!haveStyleSheet) {
     const style = document.createElement('style');
-    style.innerText = `@keyframes ${styles.prefix || 'wwp_'}pulse {
+    style.innerHTML = `@keyframes ${styles.prefix || 'wwp_'}pulse {
       0%   { opacity: 1; }
       100% { opacity: 0; }
     }
@@ -48,8 +49,7 @@ const setLoader = (element, styles) => {
     }
     .${loaderClass}_delay {
       animation-delay: 0.75s;
-    }
-    </style>`;
+    }`;
     document.getElementsByTagName('head')[0].appendChild(style);
     haveStyleSheet = true;
   }

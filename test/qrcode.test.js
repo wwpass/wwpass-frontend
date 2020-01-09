@@ -105,7 +105,7 @@ describe('wwpassQRcodeAuth', () => {
       qrcode: document.getElementById('qrcode')
     };
     return wwpassQRCodeAuth(options).then((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/');
+      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
       expect(result).toEqual({
         ppx: 'wwp_',
         version: 2,
@@ -136,7 +136,7 @@ describe('wwpassQRcodeAuth', () => {
     };
     expect.assertions(2);
     return wwpassQRCodeAuth(options).catch((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/');
+      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
       expect(result).toEqual({
         ppx: 'wwp_',
         version: 2,
@@ -167,7 +167,7 @@ describe('wwpassQRcodeAuth', () => {
     };
     expect.assertions(2);
     return wwpassQRCodeAuth(options).then(jest.fa).catch((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/');
+      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
       expect(result).toEqual({
         ppx: 'wwp_',
         version: 2,
@@ -205,7 +205,7 @@ describe('wwpassQRcodeAuth', () => {
 
     global.fetch.mockClear(0);
     return wwpassQRCodeAuth(options).then((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/');
+      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
       expect(global.fetch).toHaveBeenCalledTimes(2);
       expect(result).toEqual({
         ppx: 'wwp_',
