@@ -4,9 +4,10 @@ import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
 
 
-const isMobile = () => navigator &&
-    'userAgent' in navigator &&
-    navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
+const isMobile = () => navigator && (
+      ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i)) ||
+      (navigator.maxTouchPoints > 1)
+    ) && !window.MSStream;
 
 const removeLoader = (element) => {
   while (element.firstChild) {
