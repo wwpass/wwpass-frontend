@@ -5,7 +5,7 @@ import {
 } from './crypto';
 import { generateClientNonce } from './nonce';
 
-const openWithTicket = initialOptions => new Promise((resolve) => {
+const openWithTicket = (initialOptions) => new Promise((resolve) => {
   const defaultOptions = {
     ticket: '',
     ttl: 120,
@@ -14,14 +14,12 @@ const openWithTicket = initialOptions => new Promise((resolve) => {
     away: true
   };
 
-  let options = Object.assign({}, defaultOptions, initialOptions);
+  let options = { ...defaultOptions, ...initialOptions };
 
   if (isClientKeyTicket(options.ticket)) {
     generateClientNonce(options.ticket, options.ttl)
     .then((key) => {
-      options = Object.assign({}, options, {
-        clientKey: encodeClientKey(key)
-      });
+      options = { ...options, clientKey: encodeClientKey(key) };
       const url = getUniversalURL(options);
       if (options.away) {
         window.location.href = url;

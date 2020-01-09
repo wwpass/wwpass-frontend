@@ -38,7 +38,7 @@ const wwpassPlatformName = () => {
   return null;
 };
 
-const wwpassMessageForPlatform = platformName => `${WWPASS_UNSUPPORTED_PLATFORM_MSG_TMPL} ${platformName}`;
+const wwpassMessageForPlatform = (platformName) => `${WWPASS_UNSUPPORTED_PLATFORM_MSG_TMPL} ${platformName}`;
 
 
 const wwpassShowError = (message, title, onCloseCallback) => {

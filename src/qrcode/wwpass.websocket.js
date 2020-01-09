@@ -22,7 +22,7 @@ const applyDefaults = (initialOptions) => {
     spfewsAddress: 'wss://spfews.wwpass.com',
     echo: undefined
   };
-  return Object.assign({}, defaultOptions, initialOptions);
+  return { ...defaultOptions, ...initialOptions };
 };
 /**
 * WWPass SPFE WebSocket connection
@@ -36,7 +36,7 @@ const applyDefaults = (initialOptions) => {
 *   'echo': undefined
 * }
 */
-const getWebSocketResult = initialOptions => new Promise((resolve, reject) => {
+const getWebSocketResult = (initialOptions) => new Promise((resolve, reject) => {
   const options = applyDefaults(initialOptions);
   let clientKey = null;
   let originalTicket = options.ticket;

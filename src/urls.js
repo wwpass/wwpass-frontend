@@ -9,7 +9,7 @@ const getCallbackURL = (initialOptions = {}) => {
     hw: false // hardware legacy
   };
 
-  const options = Object.assign({}, defaultOptions, initialOptions);
+  const options = { ...defaultOptions, ...initialOptions };
 
   let url = options.callbackURL;
   const firstDelimiter = (url.indexOf('?') === -1) ? '?' : '&';
@@ -36,7 +36,7 @@ const getUniversalURL = (initialOptions = {}, allowCallbackURL = true) => {
     clientKey: undefined
   };
 
-  const options = Object.assign({}, defaultOptions, initialOptions);
+  const options = { ...defaultOptions, ...initialOptions };
 
   let url = options.universal ? 'https://get.wwpass.com/' : 'wwpass://';
 

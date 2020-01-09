@@ -4,7 +4,7 @@ import { isClientKeyTicket } from './ticket';
 
 const noCacheHeaders = { pragma: 'no-cache', 'cache-control': 'no-cache' };
 
-const getTicket = url => fetch(url, { cache: 'no-store', headers: noCacheHeaders }).then((response) => {
+const getTicket = (url) => fetch(url, { cache: 'no-store', headers: noCacheHeaders }).then((response) => {
   if (!response.ok) {
     throw Error(`Error fetching ticket from "${url}": ${response.statusText}`);
   }
@@ -18,7 +18,7 @@ const getTicket = url => fetch(url, { cache: 'no-store', headers: noCacheHeaders
   The functions ultimately resolves to:
   {"ticket": "<new_ticket>", "ttl": <new_ticket_ttl>}
 */
-const updateTicket = url => fetch(url, { cache: 'no-store', headers: noCacheHeaders }).then((response) => {
+const updateTicket = (url) => fetch(url, { cache: 'no-store', headers: noCacheHeaders }).then((response) => {
   if (!response.ok) {
     throw Error(`Error updating ticket from "${url}": ${response.statusText}`);
   }
@@ -43,7 +43,8 @@ const updateTicket = url => fetch(url, { cache: 'no-store', headers: noCacheHead
     }
     return getClientNonce(
       wsResult.originalTicket ? wsResult.originalTicket : response.newTicket,
-      wsResult.ttl);
+      wsResult.ttl
+    );
   })
   .then(() => result);
 });

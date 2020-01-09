@@ -43,13 +43,13 @@ class WWPassCryptoPromise {
         'unwrapKey'
       ]);
     })
-    .then(clientKeyNonce => decrypt({ name: 'AES-CBC', iv: clientKeyIV }, clientKeyNonce, b64ToAb(encryptedClientKey)))
-    .then(arrayBuffer => importKey('raw', arrayBuffer, algorithm, false, [
+    .then((clientKeyNonce) => decrypt({ name: 'AES-CBC', iv: clientKeyIV }, clientKeyNonce, b64ToAb(encryptedClientKey)))
+    .then((arrayBuffer) => importKey('raw', arrayBuffer, algorithm, false, [
       'encrypt',
       'decrypt',
       'wrapKey',
       'unwrapKey']))
-    .then(key => new WWPassCryptoPromise(key, algorithm))
+    .then((key) => new WWPassCryptoPromise(key, algorithm))
     .catch((error) => {
       if (error.reason !== undefined) {
         throw new Error(error.reason);
@@ -66,7 +66,7 @@ class WWPassCryptoPromise {
       iv
     });
     return encrypt(algorithm,
-      this.clientKey, arrayBuffer).then(encryptedAB => concatBuffers(iv.buffer, encryptedAB));
+      this.clientKey, arrayBuffer).then((encryptedAB) => concatBuffers(iv.buffer, encryptedAB));
   }
 
   encryptString(string) {
@@ -108,19 +108,19 @@ class WWPassCrypto {
   }
 
   encryptArrayBuffer(arrayBuffer) {
-    return this.cryptoPromise.then(crypto => crypto.encryptArrayBuffer(arrayBuffer));
+    return this.cryptoPromise.then((crypto) => crypto.encryptArrayBuffer(arrayBuffer));
   }
 
   encryptString(string) {
-    return this.cryptoPromise.then(crypto => crypto.encryptString(string));
+    return this.cryptoPromise.then((crypto) => crypto.encryptString(string));
   }
 
   decryptArrayBuffer(encryptedArrayBuffer) {
-    return this.cryptoPromise.then(crypto => crypto.decryptArrayBuffer(encryptedArrayBuffer));
+    return this.cryptoPromise.then((crypto) => crypto.decryptArrayBuffer(encryptedArrayBuffer));
   }
 
   decryptString(encryptedString) {
-    return this.cryptoPromise.then(crypto => crypto.decryptString(encryptedString));
+    return this.cryptoPromise.then((crypto) => crypto.decryptString(encryptedString));
   }
 }
 
