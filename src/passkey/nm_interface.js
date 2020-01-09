@@ -7,7 +7,7 @@ const EXTENSION_POLL_ATTEMPTS = 15;
 let extensionNotInstalled = false;
 
 const timedPoll = (args) => {
-  let condition = args.condition;
+  let { condition } = args;
   if (typeof (condition) === 'function') {
     condition = condition();
   }
@@ -18,7 +18,8 @@ const timedPoll = (args) => {
     if (attempts--) { // eslint-disable-line no-plusplus
       const timeout = args.timeout || 100;
       setTimeout(((p => (() => { timedPoll(p); }))(
-        { timeout,
+        {
+          timeout,
           attempts,
           condition: args.condition,
           onCondition: args.onCondition,
@@ -64,12 +65,12 @@ const wwpassNMCall = (func, args, log = () => {}) =>
             if (event.data.code === WWPASS_STATUS.NO_AUTH_INTERFACES_FOUND) {
               const message = '<p>No Security Pack is found on your computer or WWPass&nbsp;native&nbsp;host is not responding.</p><p>To install Security Pack visit <a href="https://ks.wwpass.com/download/">Key Services</a> </p><p><a href="https://support.wwpass.com/?topic=604">Learn more...</a></p>';
               wwpassShowError(message, 'WWPass Error',
-                            () => {
-                              reject({
-                                code: event.data.code,
-                                message: event.data.ticketOrMessage
-                              });
-                            });
+                () => {
+                  reject({
+                    code: event.data.code,
+                    message: event.data.ticketOrMessage
+                  });
+                });
             } else if (event.data.code === WWPASS_STATUS.OK) {
               resolve(event.data.ticketOrMessage);
             } else {
@@ -97,7 +98,7 @@ const wwpassNMExecute = (inputRequest) => {
     log: () => {}
   };
   const request = Object.assign({}, defaultOptions, inputRequest);
-  const log = request.log;
+  const { log } = request;
   delete request.log;
   log('%s: called', 'wwpassNMExecute');
   request.uri = { domain: window.location.hostname, protocol: window.location.protocol };

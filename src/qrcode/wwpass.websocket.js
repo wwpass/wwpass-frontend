@@ -72,7 +72,7 @@ const getWebSocketResult = initialOptions => new Promise((resolve, reject) => {
   const websocketurl = options.spfewsAddress;
   const socket = new WebSocket(websocketurl);
   connectionPool.push(socket);
-  const log = options.log;
+  const { log } = options;
 
   socket.onopen = () => {
     try {
@@ -105,7 +105,7 @@ const getWebSocketResult = initialOptions => new Promise((resolve, reject) => {
       log(`Message received from server: ${message.data}`);
       const response = JSON.parse(message.data);
       const status = response.code;
-      const reason = response.reason;
+      const { reason } = response;
 
       if ('clientKey' in response && !clientKey) {
         clientKey = response.clientKey;

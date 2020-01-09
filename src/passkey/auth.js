@@ -4,12 +4,12 @@ import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
 import { getClientNonceWrapper } from '../nonce';
 import { wwpassAuth, waitForRemoval } from './passkey';
-import navigateToCallback from './../navigation';
+import navigateToCallback from '../navigation';
 import { renderPassKeyButton } from './ui';
 
 const doWWPassPasskeyAuth = options => getTicket(options.ticketURL).then((json) => {
   const response = ticketAdapter(json);
-  const ticket = response.ticket;
+  const { ticket } = response;
   return getClientNonceWrapper(ticket, response.ttl)
   .then(key => wwpassAuth({
     ticket,

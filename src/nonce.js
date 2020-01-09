@@ -123,14 +123,19 @@ const getClientNonceWrapper = (ticket, ttl = 120) => {
 
 const copyClientNonce = (oldTicket, newTicket, ttl) =>
   getClientNonce(oldTicket).then(nonceKey => sha256(newTicket)
-    .then((digest) => {
-      const nonces = loadNonces();
-      nonces.push({
-        hash: digest,
-        key: abToB64(nonceKey),
-        deadline: window.Date.now() + (ttl * 1000)
-      });
-      saveNonces(nonces);
-    }));
+  .then((digest) => {
+    const nonces = loadNonces();
+    nonces.push({
+      hash: digest,
+      key: abToB64(nonceKey),
+      deadline: window.Date.now() + (ttl * 1000)
+    });
+    saveNonces(nonces);
+  }));
 
-export { getClientNonce, generateClientNonce, getClientNonceWrapper, copyClientNonce };
+export {
+  getClientNonce,
+  generateClientNonce,
+  getClientNonceWrapper,
+  copyClientNonce
+};

@@ -4,7 +4,7 @@ const prefix = (window.location.protocol === 'https:') ? 'https:' : 'http:';
 const CSS = `${prefix}//cdn.wwpass.com/packages/wwpass.js/2.4/wwpass.js.css`;
 
 const isNativeMessaging = () => {
-  const userAgent = navigator.userAgent;
+  const { userAgent } = navigator;
 
   let re = /Firefox\/([0-9]+)\./;
   let match = userAgent.match(re);
@@ -28,7 +28,7 @@ const isNativeMessaging = () => {
 };
 
 const wwpassPlatformName = () => {
-  const userAgent = navigator.userAgent;
+  const { userAgent } = navigator;
   const knownPlatforms = ['Android', 'iPhone', 'iPad'];
   for (let i = 0; i < knownPlatforms.length; i += 1) {
     if (userAgent.search(new RegExp(knownPlatforms[i], 'i')) !== -1) {
@@ -88,16 +88,15 @@ const wwpassNoSoftware = (code, onclose) => {
         message = '<p>The WWPass Authentication extension for Chrome is not installed or is disabled in browser settings.';
         message += '<p>Click the link below to install and enable the WWPass Authentication extension.';
         message += `<p><a href="https://chrome.wwpass.com/?callbackURL=${returnURL}">Install WWPass Authentication Extension</a>`;
-      } else
-            if (client === 'Firefox') {
-                // Firefox
-              const returnURL = encodeURIComponent(window.location.href);
-              message = '<p>The WWPass Authentication extension for Firefox is not installed or is disabled in browser settings.';
-              message += '<p>Click the link below to install and enable the WWPass Authentication extension.';
-              message += `<p><a href="https://firefox.wwpass.com/?callbackURL=${returnURL}">Install WWPass Authentication Extension</a>`;
-            } else {
-                // Wait Edge
-            }
+      } else if (client === 'Firefox') {
+        // Firefox
+        const returnURL = encodeURIComponent(window.location.href);
+        message = '<p>The WWPass Authentication extension for Firefox is not installed or is disabled in browser settings.';
+        message += '<p>Click the link below to install and enable the WWPass Authentication extension.';
+        message += `<p><a href="https://firefox.wwpass.com/?callbackURL=${returnURL}">Install WWPass Authentication Extension</a>`;
+      } else {
+        // Wait Edge
+      }
     } else {
       message = '<p>No Security Pack is found on your computer or WWPass&nbsp;Browser&nbsp;Plugin is disabled.</p><p>To install Security Pack visit <a href="https://ks.wwpass.com/download/">Key Services</a> or check plugin settings of your browser to activate WWPass&nbsp;Browser&nbsp;Plugin.</p><p><a href="https://support.wwpass.com/?topic=604">Learn more...</a></p>';
     }
