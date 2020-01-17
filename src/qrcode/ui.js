@@ -5,9 +5,9 @@ import { WWPASS_STATUS } from '../passkey/constants';
 
 
 const isMobile = () => navigator && (
-      ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i)) ||
-      (navigator.maxTouchPoints > 1)
-    ) && !window.MSStream;
+  ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i))
+  || (navigator.maxTouchPoints > 1)
+) && !window.MSStream;
 
 const removeLoader = (element) => {
   while (element.firstChild) {
@@ -94,8 +94,8 @@ const setRefersh = (element, error) => {
   console.error(`Error in WWPass Library: ${error}`);
   removeLoader(element);
   element.appendChild(wrapper);
-  return httpsRequired ? Promise.reject(error.message) :
-    new Promise((resolve) => {
+  return httpsRequired ? Promise.reject(error.message)
+    : new Promise((resolve) => {
       // Refresh after 1 minute or on click
       setTimeout(() => {
         resolve({ refresh: true });
@@ -137,43 +137,43 @@ const QRCodePromise = (
   wwpassURLoptions,
   ttl,
   qrcodeStyle
-  ) => new Promise((resolve) => {
-    let QRCodeElement = document.createElement('canvas');
-    QRCode.toCanvas(QRCodeElement,
-      getUniversalURL(wwpassURLoptions, false),
-      qrcodeStyle || {}, (error) => {
-        if (error) {
-          throw error;
-        }
-      });
-    if (qrcodeStyle) {
-      QRCodeElement.className = `${qrcodeStyle.prefix}qrcode_canvas`;
-      QRCodeElement.style.max_width = `${qrcodeStyle.width}px`;
-      QRCodeElement.style.max_height = `${qrcodeStyle.width}px`;
-    }
-    QRCodeElement.style.height = '100%';
-    QRCodeElement.style.width = '100%';
+) => new Promise((resolve) => {
+  let QRCodeElement = document.createElement('canvas');
+  QRCode.toCanvas(QRCodeElement,
+    getUniversalURL(wwpassURLoptions, false),
+    qrcodeStyle || {}, (error) => {
+      if (error) {
+        throw error;
+      }
+    });
+  if (qrcodeStyle) {
+    QRCodeElement.className = `${qrcodeStyle.prefix}qrcode_canvas`;
+    QRCodeElement.style.max_width = `${qrcodeStyle.width}px`;
+    QRCodeElement.style.max_height = `${qrcodeStyle.width}px`;
+  }
+  QRCodeElement.style.height = '100%';
+  QRCodeElement.style.width = '100%';
 
-    if (isMobile()) {
-      // Wrapping QRCode canvas in <a>
-      const universalLinkElement = document.createElement('a');
-      universalLinkElement.href = getUniversalURL(wwpassURLoptions);
+  if (isMobile()) {
+    // Wrapping QRCode canvas in <a>
+    const universalLinkElement = document.createElement('a');
+    universalLinkElement.href = getUniversalURL(wwpassURLoptions);
 
-      universalLinkElement.appendChild(QRCodeElement);
-      universalLinkElement.addEventListener('click', () => {
-        resolve({ away: true });
-      });
-      QRCodeElement = universalLinkElement;
-    }
+    universalLinkElement.appendChild(QRCodeElement);
+    universalLinkElement.addEventListener('click', () => {
+      resolve({ away: true });
+    });
+    QRCodeElement = universalLinkElement;
+  }
 
-    removeLoader(parentElement);
-    parentElement.appendChild(QRCodeElement);
-    setTimeout(() => {
-      debouncePageVisible(() => {
-        resolve({ refresh: true });
-      });
-    }, ttl * 900);
-  });
+  removeLoader(parentElement);
+  parentElement.appendChild(QRCodeElement);
+  setTimeout(() => {
+    debouncePageVisible(() => {
+      resolve({ refresh: true });
+    });
+  }, ttl * 900);
+});
 
 const clearQRCode = (parentElement, style) => setLoader(parentElement, style);
 
