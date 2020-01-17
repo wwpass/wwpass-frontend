@@ -37,7 +37,7 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
       callbackURL: options.callbackURL
     });
   }
-  if (options.passkeyButton.children.length === 0) {
+  if (options.passkeyButton.innerHTML.length === 0) {
     options.passkeyButton.appendChild(renderPassKeyButton());
   }
   let authUnderway = false;
