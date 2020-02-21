@@ -1,4 +1,5 @@
 import './crypto.mock';
+import 'jest-canvas-mock';
 import {TextEncoder} from 'text-encoding';
 global.TextEncoder = TextEncoder;
 import { getWebSocketResult } from '../src/qrcode/wwpass.websocket';
