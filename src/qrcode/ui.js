@@ -38,7 +38,7 @@ const setLoader = (element, styles) => {
       width: 30%;
       height: 30%;
       margin-left: 35%;
-      margin-top: 35%;
+      padding-top: 35%;
     }
     .${loaderClass}_blk {
       height: 35%;
