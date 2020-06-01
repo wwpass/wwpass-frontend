@@ -21,9 +21,9 @@ const wwpassPluginShowsErrors = (pluginVersionString) => {
     }
     if (pluginVersion.length === 3) {
       if (
-          (pluginVersion[0] > 2) ||
-          (pluginVersion[0] === 2 && pluginVersion[1] > 4) ||
-          (pluginVersion[0] === 2 && pluginVersion[1] === 4 && pluginVersion[2] >= 1305)
+        (pluginVersion[0] > 2)
+        || (pluginVersion[0] === 2 && pluginVersion[1] > 4)
+        || (pluginVersion[0] === 2 && pluginVersion[1] === 4 && pluginVersion[2] >= 1305)
       ) {
         return true;
       }
@@ -32,7 +32,7 @@ const wwpassPluginShowsErrors = (pluginVersionString) => {
   return false;
 };
 
-const getPluginInstance = log => new Promise((resolve, reject) => {
+const getPluginInstance = (log) => new Promise((resolve, reject) => {
   if (savedPluginInstance) {
     if (window._wwpass_plugin_loaded !== undefined) { // eslint-disable-line no-underscore-dangle
       pendingReqests.push([resolve, reject]);
@@ -99,12 +99,12 @@ const wrapCallback = (callback) => {
   if (!PluginInfo.showsErrors) {
     return (code, ticketOrMessage) => {
       if (code !== WWPASS_STATUS.OK && code !== WWPASS_STATUS.USER_REJECT) {
-        const message = `<p><b>A error has occured:</b> ${ticketOrMessage}</p>` +
-                `<p><a href="https://support.wwpass.com/?topic=${code}">Learn more</a></p>`;
+        const message = `<p><b>A error has occured:</b> ${ticketOrMessage}</p>`
+                + `<p><a href="https://support.wwpass.com/?topic=${code}">Learn more</a></p>`;
         wwpassShowError(message, 'WWPass Error',
-                () => {
-                  callback(code, ticketOrMessage);
-                });
+          () => {
+            callback(code, ticketOrMessage);
+          });
       } else {
         callback(code, ticketOrMessage);
       }
@@ -113,37 +113,35 @@ const wrapCallback = (callback) => {
   return callback;
 };
 
-const wwpassPluginExecute = inputRequest =>
-  new Promise((resolve, reject) => {
-    const defaultOptions = {
-      log: () => {}
-    };
-    const request = Object.assign({}, defaultOptions, inputRequest);
-    request.log('%s: called, operation name is "%s"', 'wwpassPluginExecute', request.operation || null);
-    getPluginInstance(request.log).then((plugin) => {
-      const wrappedCallback = wrapCallback((code, ticketOrMessage) => {
-        if (code === WWPASS_STATUS.OK) {
-          resolve(ticketOrMessage);
-        } else {
-          reject({ code, message: ticketOrMessage });
-        }
-      });
-      if (plugin.execute !== undefined) {
-        request.callback = wrappedCallback;
-        plugin.execute(request);
-      } else if (request.operation === 'auth') {
-        if (PluginInfo.revision < PLUGIN_AUTH_KEYTYPE_REVISION) {
-          plugin.authenticate(request.ticket, wrappedCallback);
-        } else {
-          plugin.authenticate(request.ticket, wrappedCallback,
-            request.firstKeyType || WWPASS_KEY_TYPE_DEFAULT);
-        }
+const wwpassPluginExecute = (inputRequest) => new Promise((resolve, reject) => {
+  const defaultOptions = {
+    log: () => {}
+  };
+  const request = { ...defaultOptions, ...inputRequest };
+  request.log('%s: called, operation name is "%s"', 'wwpassPluginExecute', request.operation || null);
+  getPluginInstance(request.log).then((plugin) => {
+    const wrappedCallback = wrapCallback((code, ticketOrMessage) => {
+      if (code === WWPASS_STATUS.OK) {
+        resolve(ticketOrMessage);
       } else {
-        plugin.do_operation(request.operation, wrappedCallback);
+        reject({ code, message: ticketOrMessage });
       }
-    }).catch(reject);
-  }
-);
+    });
+    if (plugin.execute !== undefined) {
+      request.callback = wrappedCallback;
+      plugin.execute(request);
+    } else if (request.operation === 'auth') {
+      if (PluginInfo.revision < PLUGIN_AUTH_KEYTYPE_REVISION) {
+        plugin.authenticate(request.ticket, wrappedCallback);
+      } else {
+        plugin.authenticate(request.ticket, wrappedCallback,
+          request.firstKeyType || WWPASS_KEY_TYPE_DEFAULT);
+      }
+    } else {
+      plugin.do_operation(request.operation, wrappedCallback);
+    }
+  }).catch(reject);
+});
 
 const pluginWaitForRemoval = (log = () => {}) => new Promise((resolve, reject) => {
   getPluginInstance(log).then((plugin) => {
@@ -151,4 +149,8 @@ const pluginWaitForRemoval = (log = () => {}) => new Promise((resolve, reject) =
   }).catch(reject);
 });
 
-export { wwpassPluginExecute, pluginWaitForRemoval, havePlugin };
+export {
+  wwpassPluginExecute,
+  pluginWaitForRemoval,
+  havePlugin
+};

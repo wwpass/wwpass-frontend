@@ -44,9 +44,9 @@ const wwpassQRCodeAuth = (initialOptions) => {
     log: () => {}
   };
 
-  const options = Object.assign({}, defaultOptions, initialOptions);
-  options.qrcodeStyle = Object.assign({}, defaultOptions.qrcodeStyle, initialOptions.qrcodeStyle);
-  const log = options.log;
+  const options = { ...defaultOptions, ...initialOptions };
+  options.qrcodeStyle = { ...defaultOptions.qrcodeStyle, ...initialOptions.qrcodeStyle };
+  const { log } = options;
 
   if (!options.ticketURL) {
     throw Error('ticketURL not found');

@@ -6,7 +6,7 @@ import { wwpassNoSoftware, wwpassMessageForPlatform } from './ui';
 const pluginPresent = () => (havePlugin() || isNativeMessagingExtensionReady());
 
 const wwpassPlatformName = () => {
-  const userAgent = navigator.userAgent;
+  const { userAgent } = navigator;
   const knownPlatforms = ['Android', 'iPhone', 'iPad'];
   for (let i = 0; i < knownPlatforms.length; i += 1) {
     if (userAgent.search(new RegExp(knownPlatforms[i], 'i')) !== -1) {
@@ -54,16 +54,16 @@ const wwpassCall = (nmFunc, pluginFunc, request) => new Promise((resolve, reject
   }
 });
 
-const wwpassAuth = request => (wwpassCall(wwpassNMExecute, wwpassPluginExecute, Object.assign({}, request, { operation: 'auth' })));
+const wwpassAuth = (request) => (wwpassCall(wwpassNMExecute, wwpassPluginExecute, { ...request, operation: 'auth' }));
 
-const wwpassExecute = request => (wwpassCall(wwpassNMExecute, wwpassPluginExecute, request));
+const wwpassExecute = (request) => (wwpassCall(wwpassNMExecute, wwpassPluginExecute, request));
 
 const waitForRemoval = () => (wwpassCall(nmWaitForRemoval, pluginWaitForRemoval));
 
 export {
-    pluginPresent,
-    wwpassAuth,
-    wwpassExecute,
-    waitForRemoval,
-    WWPASS_STATUS
+  pluginPresent,
+  wwpassAuth,
+  wwpassExecute,
+  waitForRemoval,
+  WWPASS_STATUS
 };
