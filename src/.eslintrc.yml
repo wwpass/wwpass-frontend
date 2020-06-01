@@ -6,9 +6,15 @@ env:
   browser: true
 
 extends:
-  - 'airbnb'
+  - airbnb-base
 
 rules:
   comma-dangle:
     - error
     - never
+  indent:
+    - error
+    - 2
+    - MemberExpression: 0
+  prefer-promise-reject-errors: 0
+  max-classes-per-file: 0
