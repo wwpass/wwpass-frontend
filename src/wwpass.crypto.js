@@ -1,12 +1,16 @@
 import { getWebSocketResult } from './qrcode/wwpass.websocket';
-import { ab2str, str2ab, abToB64, b64ToAb } from './ab';
-import { encrypt, decrypt, importKey, getRandomData, concatBuffers } from './crypto';
+import {
+  ab2str, str2ab, abToB64, b64ToAb
+} from './ab';
+import {
+  encrypt, decrypt, importKey, getRandomData, concatBuffers
+} from './crypto';
 import { getClientNonce } from './nonce';
 
 const clientKeyIV = new Uint8Array(
   [176, 178, 97, 142, 156, 31, 45, 30,
     81, 210, 85, 14, 202, 203, 86, 240]
-  );
+);
 
 class WWPassCryptoPromise {
   /* Return Promise that will be resloved to catual crypto object
@@ -39,13 +43,13 @@ class WWPassCryptoPromise {
         'unwrapKey'
       ]);
     })
-    .then(clientKeyNonce => decrypt({ name: 'AES-CBC', iv: clientKeyIV }, clientKeyNonce, b64ToAb(encryptedClientKey)))
-    .then(arrayBuffer => importKey('raw', arrayBuffer, algorithm, false, [
+    .then((clientKeyNonce) => decrypt({ name: 'AES-CBC', iv: clientKeyIV }, clientKeyNonce, b64ToAb(encryptedClientKey)))
+    .then((arrayBuffer) => importKey('raw', arrayBuffer, algorithm, false, [
       'encrypt',
       'decrypt',
       'wrapKey',
       'unwrapKey']))
-    .then(key => new WWPassCryptoPromise(key, algorithm))
+    .then((key) => new WWPassCryptoPromise(key, algorithm))
     .catch((error) => {
       if (error.reason !== undefined) {
         throw new Error(error.reason);
@@ -57,27 +61,31 @@ class WWPassCryptoPromise {
   encryptArrayBuffer(arrayBuffer) {
     const iv = new Uint8Array(this.ivLen);
     getRandomData(iv);
-    const algorithm = this.algorithm;
+    const { algorithm } = this;
     Object.assign(algorithm, {
       iv
     });
     return encrypt(algorithm,
-      this.clientKey, arrayBuffer).then(encryptedAB => concatBuffers(iv.buffer, encryptedAB));
+      this.clientKey, arrayBuffer).then((encryptedAB) => concatBuffers(iv.buffer, encryptedAB));
   }
+
   encryptString(string) {
     return this.encryptArrayBuffer(str2ab(string)).then(abToB64);
   }
+
   decryptArrayBuffer(encryptedArrayBuffer) {
-    const algorithm = this.algorithm;
+    const { algorithm } = this;
     Object.assign(algorithm, {
       iv: encryptedArrayBuffer.slice(0, this.ivLen)
     });
     return decrypt(algorithm,
       this.clientKey, encryptedArrayBuffer.slice(this.ivLen));
   }
+
   decryptString(encryptedString) {
     return this.decryptArrayBuffer(b64ToAb(encryptedString)).then(ab2str);
   }
+
   // Private
   constructor(key, algorithm) {
     this.ivLen = algorithm.name === 'AES-GCM' ? 12 : 16;
@@ -92,7 +100,6 @@ class WWPassCryptoPromise {
 }
 
 class WWPassCrypto {
-
   constructor(ticket, algorithm) {
     if (window.console && window.console.error) {
       window.console.error('WWPassCrypto.initWithTicket is deprecated. Use WWPassCrypto.promiseWithTicket istead');
@@ -101,16 +108,19 @@ class WWPassCrypto {
   }
 
   encryptArrayBuffer(arrayBuffer) {
-    return this.cryptoPromise.then(crypto => crypto.encryptArrayBuffer(arrayBuffer));
+    return this.cryptoPromise.then((crypto) => crypto.encryptArrayBuffer(arrayBuffer));
   }
+
   encryptString(string) {
-    return this.cryptoPromise.then(crypto => crypto.encryptString(string));
+    return this.cryptoPromise.then((crypto) => crypto.encryptString(string));
   }
+
   decryptArrayBuffer(encryptedArrayBuffer) {
-    return this.cryptoPromise.then(crypto => crypto.decryptArrayBuffer(encryptedArrayBuffer));
+    return this.cryptoPromise.then((crypto) => crypto.decryptArrayBuffer(encryptedArrayBuffer));
   }
+
   decryptString(encryptedString) {
-    return this.cryptoPromise.then(crypto => crypto.decryptString(encryptedString));
+    return this.cryptoPromise.then((crypto) => crypto.decryptString(encryptedString));
   }
 }
 

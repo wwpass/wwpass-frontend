@@ -30,12 +30,12 @@ const sha256 = (str) => {
   // We transform the string into an arraybuffer.
   const buffer = str2ab(str);
   return subtle.digest({ name: 'SHA-256' }, buffer)
-  .then(hash => hex(hash));
+  .then((hash) => hex(hash));
 };
 
 const clean = (items) => {
   const currentDate = window.Date.now();
-  return items.filter(item => item.deadline > currentDate);
+  return items.filter((item) => item.deadline > currentDate);
 };
 
 const loadNonces = () => {
@@ -65,7 +65,7 @@ const getClientNonce = (ticket, newTTL = null) => {
 
   return sha256(ticket)
   .then((hash) => {
-    const nonce = nonces.find(it => hash === it.hash);
+    const nonce = nonces.find((it) => hash === it.hash);
     const key = (nonce && nonce.key) ? b64ToAb(nonce.key) : undefined;
     if (newTTL && key) {
       nonce.deadline = window.Date.now() + (newTTL * 1000);
@@ -94,8 +94,8 @@ const generateClientNonce = (ticket, ttl = 120) => {
       true, // is extractable
       ['encrypt', 'decrypt']
     )
-    .then(key => exportKey('raw', key))
-    .then(rawKey => sha256(ticket).then((digest) => {
+    .then((key) => exportKey('raw', key))
+    .then((rawKey) => sha256(ticket).then((digest) => {
       const nonce = {
         hash: digest,
         key: abToB64(rawKey),
@@ -121,16 +121,20 @@ const getClientNonceWrapper = (ticket, ttl = 120) => {
   return generateClientNonce(ticket, ttl);
 };
 
-const copyClientNonce = (oldTicket, newTicket, ttl) =>
-  getClientNonce(oldTicket).then(nonceKey => sha256(newTicket)
-    .then((digest) => {
-      const nonces = loadNonces();
-      nonces.push({
-        hash: digest,
-        key: abToB64(nonceKey),
-        deadline: window.Date.now() + (ttl * 1000)
-      });
-      saveNonces(nonces);
-    }));
+const copyClientNonce = (oldTicket, newTicket, ttl) => getClientNonce(oldTicket).then((nonceKey) => sha256(newTicket) // eslint-disable-line max-len
+.then((digest) => {
+  const nonces = loadNonces();
+  nonces.push({
+    hash: digest,
+    key: abToB64(nonceKey),
+    deadline: window.Date.now() + (ttl * 1000)
+  });
+  saveNonces(nonces);
+}));
 
-export { getClientNonce, generateClientNonce, getClientNonceWrapper, copyClientNonce };
+export {
+  getClientNonce,
+  generateClientNonce,
+  getClientNonceWrapper,
+  copyClientNonce
+};
