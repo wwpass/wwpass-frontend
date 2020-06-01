@@ -1,1 +1,7 @@
-window.navigator.mimeTypes = {'application/x-wwauth': true};
+
+let mimeTypeGetter = jest.spyOn(window.navigator, 'mimeTypes', 'get');
+mimeTypeGetter.mockReturnValue({'application/x-wwauth': true});
+
+export {
+    mimeTypeGetter
+}

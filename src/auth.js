@@ -18,7 +18,7 @@ const authInit = (initialOptions) => {
   };
 
   const options = { ...defaultOptions, ...initialOptions };
-  if(typeof(options.callbackURL) == 'string') {
+  if (typeof (options.callbackURL) === 'string') {
     options.callbackURL = absolutePath(options.callbackURL);
   }
   options.passkeyButton = (typeof options.passkey === 'string') ? document.querySelector(options.passkey) : options.passkey;
