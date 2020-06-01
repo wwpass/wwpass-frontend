@@ -12,7 +12,7 @@ const getCallbackURL = (initialOptions = {}) => {
   const options = { ...defaultOptions, ...initialOptions };
 
   let url = '';
-  if(typeof(options.callbackURL) == 'string') {
+  if (typeof (options.callbackURL) === 'string') {
     url = options.callbackURL;
   }
 
