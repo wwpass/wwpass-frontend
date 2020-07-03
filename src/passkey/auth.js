@@ -77,9 +77,11 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
     });
   }
   if (options.forcePasskeyButton || pluginPresent()) {
+    if (options.passkeyButton.style.display == 'none')
+      options.passkeyButton.style.display = null;
     initPasskeyButton(options, resolve, reject);
   } else {
-    const displayBackup = options.passkeyButton.style.display;
+    const displayBackup = displayBackup === 'none'?null:options.passkeyButton.style.display;
     options.passkeyButton.style.display = 'none';
     const observer = new MutationObserver((_mutationsList, _observer) => {
       if (pluginPresent()) {
