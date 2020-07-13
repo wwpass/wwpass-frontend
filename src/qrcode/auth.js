@@ -53,7 +53,8 @@ const tryQRCodeAuth = async (options) => {
         development: options.development,
         version: options.version,
         ppx: options.ppx,
-        spfewsAddress: options.spfewsAddress
+        spfewsAddress: options.spfewsAddress,
+        returnErrors: options.returnErrors
       })
     ]);
     clearQRCode(options.qrcode, options.qrcodeStyle);
@@ -73,7 +74,6 @@ const tryQRCodeAuth = async (options) => {
         reason: 'User clicked on QRCode'
       };
     }
-    navigateToCallback(result);
     return result;
   } catch (err) {
     if (!err.status) {
