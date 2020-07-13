@@ -1,4 +1,5 @@
 import { WWPASS_OK_MSG, WWPASS_STATUS } from '../passkey/constants';
+import navigateToCallback from '../navigation';
 
 const connectionPool = [];
 const closeConnectionPool = () => {
@@ -43,7 +44,7 @@ const getWebSocketResult = (initialOptions) => new Promise((resolve, reject) => 
   let ttl = null;
   const settle = (status, reason) => {
     if (status === 200) {
-      resolve({
+      const result = {
         ppx: options.ppx,
         version: options.version,
         status,
@@ -53,16 +54,22 @@ const getWebSocketResult = (initialOptions) => new Promise((resolve, reject) => 
         clientKey,
         originalTicket,
         ttl
-      });
+      };
+      navigateToCallback(result);
+      resolve(result);
     } else {
-      reject({
+      const err = {
         ppx: options.ppx,
         version: options.version,
         status,
         reason,
         ticket: options.ticket,
         callbackURL: options.callbackURL
-      });
+      };
+      if (status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
+        navigateToCallback(err);
+      }
+      reject(err);
     }
   };
   if (!('WebSocket' in window)) {
