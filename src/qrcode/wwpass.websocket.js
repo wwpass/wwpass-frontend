@@ -21,7 +21,8 @@ const applyDefaults = (initialOptions) => {
     log: () => {},
     development: false,
     spfewsAddress: 'wss://spfews.wwpass.com',
-    echo: undefined
+    echo: undefined,
+    clientKeyOnly: false
   };
   return { ...defaultOptions, ...initialOptions };
 };
@@ -55,7 +56,9 @@ const getWebSocketResult = (initialOptions) => new Promise((resolve, reject) => 
         originalTicket,
         ttl
       };
-      navigateToCallback(result);
+      if (!options.clientKeyOnly) {
+        navigateToCallback(result);
+      }
       resolve(result);
     } else {
       const err = {
@@ -66,7 +69,7 @@ const getWebSocketResult = (initialOptions) => new Promise((resolve, reject) => 
         ticket: options.ticket,
         callbackURL: options.callbackURL
       };
-      if (status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
+      if ((status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) && !options.clientKeyOnly) {
         navigateToCallback(err);
       }
       reject(err);
