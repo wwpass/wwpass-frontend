@@ -77,6 +77,9 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
     });
   }
   if (options.forcePasskeyButton || pluginPresent()) {
+    if (options.passkeyButton.style.display === 'none') {
+      options.passkeyButton.style.display = null;
+    }
     initPasskeyButton(options, resolve, reject);
   } else {
     const displayBackup = options.passkeyButton.style.display;
@@ -84,7 +87,7 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
     const observer = new MutationObserver((_mutationsList, _observer) => {
       if (pluginPresent()) {
         _observer.disconnect();
-        options.passkeyButton.style.display = displayBackup;
+        options.passkeyButton.style.display = displayBackup === 'none' ? null : displayBackup;
         initPasskeyButton(options, resolve, reject);
       }
     });
