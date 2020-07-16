@@ -3,11 +3,9 @@ import { getUniversalURL } from '../urls';
 import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
 
-
 const isMobile = () => navigator && (
   ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i))
-  || (navigator.maxTouchPoints > 1)
-) && !window.MSStream;
+  || ((navigator.maxTouchPoints > 1) && (navigator.platform === 'MacIntel')));
 
 const removeLoader = (element) => {
   while (element.firstChild) {
