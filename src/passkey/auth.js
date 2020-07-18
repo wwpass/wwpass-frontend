@@ -3,7 +3,7 @@ import { abToB64 } from '../ab';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
 import { getClientNonceWrapper } from '../nonce';
-import { wwpassAuth, waitForRemoval } from './passkey';
+import { wwpassAuth, waitForRemoval, pluginPresent } from './passkey';
 import navigateToCallback from '../navigation';
 import { renderPassKeyButton } from './ui';
 
@@ -20,23 +20,7 @@ const doWWPassPasskeyAuth = (options) => getTicket(options.ticketURL).then((json
    * to keep the original one to find nonce */
 });
 
-const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => {
-  const defaultOptions = {
-    ticketURL: '',
-    callbackURL: '',
-    ppx: 'wwp_',
-    log: () => {}
-  };
-  const options = { ...defaultOptions, ...initialOptions };
-  if (!options.passkeyButton) {
-    reject({
-      ppx: options.ppx,
-      version: options.version,
-      code: WWPASS_STATUS.INTERNAL_ERROR,
-      message: 'Cannot find passkey element',
-      callbackURL: options.callbackURL
-    });
-  }
+const initPasskeyButton = (options, resolve, reject) => {
   if (options.passkeyButton.innerHTML.length === 0) {
     options.passkeyButton.appendChild(renderPassKeyButton());
   }
@@ -58,8 +42,8 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
       }, (err) => {
         authUnderway = false;
         if (!err.code) {
-          initialOptions.log('passKey error', err);
-        } else if (err.code === WWPASS_STATUS.INTERNAL_ERROR || initialOptions.returnErrors) {
+          options.log('passKey error', err);
+        } else if (err.code === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
           reject({
             ppx: options.ppx,
             version: options.version,
@@ -72,6 +56,45 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
     }
     e.preventDefault();
   }, false);
+};
+
+const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => {
+  const defaultOptions = {
+    ticketURL: '',
+    callbackURL: '',
+    ppx: 'wwp_',
+    forcePasskeyButton: true,
+    log: () => {}
+  };
+  const options = { ...defaultOptions, ...initialOptions };
+  if (!options.passkeyButton) {
+    reject({
+      ppx: options.ppx,
+      version: options.version,
+      code: WWPASS_STATUS.INTERNAL_ERROR,
+      message: 'Cannot find passkey element',
+      callbackURL: options.callbackURL
+    });
+  }
+  if (options.forcePasskeyButton || pluginPresent()) {
+    if (options.passkeyButton.style.display === 'none') {
+      options.passkeyButton.style.display = null;
+    }
+    initPasskeyButton(options, resolve, reject);
+  } else {
+    const displayBackup = options.passkeyButton.style.display;
+    options.passkeyButton.style.display = 'none';
+    const observer = new MutationObserver((_mutationsList, _observer) => {
+      if (pluginPresent()) {
+        _observer.disconnect();
+        options.passkeyButton.style.display = displayBackup === 'none' ? null : displayBackup;
+        initPasskeyButton(options, resolve, reject);
+      }
+    });
+    observer.observe(document.head, {
+      childList: true
+    });
+  }
 })).then(navigateToCallback, navigateToCallback);
 
 export {

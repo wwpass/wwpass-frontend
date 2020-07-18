@@ -69,7 +69,8 @@ const getWebSocketResult = (initialOptions) => new Promise((resolve, reject) => 
         ticket: options.ticket,
         callbackURL: options.callbackURL
       };
-      if ((status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) && !options.clientKeyOnly) {
+      if ((status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors)
+            && !options.clientKeyOnly) {
         navigateToCallback(err);
       }
       reject(err);
