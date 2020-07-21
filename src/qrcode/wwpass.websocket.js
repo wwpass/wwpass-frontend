@@ -1,6 +1,6 @@
 import { WWPASS_OK_MSG, WWPASS_STATUS } from '../passkey/constants';
 
-class websocketPool {
+class WebSocketPool {
   constructor(options) {
     this.connectionPool = [];
     const defaultOptions = {
@@ -41,9 +41,9 @@ class websocketPool {
     const socket = new WebSocket(this.options.spfewsAddress);
     this.connectionPool.push(socket);
     const { log } = this.options;
-    let clientKey = null;
-    let originalTicket = null;
-    let ttl = null;
+    let clientKey;
+    let originalTicket;
+    let ttl;
 
     socket.onopen = () => {
       try {
@@ -84,18 +84,18 @@ class websocketPool {
           }
         }
 
-        if (status !== 200) {
-          return; // Skip all errors. Nothing to do about them
+        if (status === 200 || (clientKey && this.options.clientKeyOnly)) {
+          this.resolve({
+            status,
+            reason: WWPASS_OK_MSG,
+            clientKey,
+            ticket,
+            ttl,
+            originalTicket: originalTicket !== null ? originalTicket : ticket
+          });
+          this.close();
         }
-        this.resolve({
-          status,
-          reason: WWPASS_OK_MSG,
-          clientKey,
-          ticket,
-          ttl,
-          originalTicket: originalTicket !== null ? originalTicket : ticket
-        });
-        this.close();
+        // Skip all errors. Nothing to do about them
       } catch (error) {
         log(error);
         this.onError(WWPASS_STATUS.INTERNAL_ERROR, 'WebSocket error');
@@ -104,4 +104,4 @@ class websocketPool {
   }
 }
 
-export default websocketPool;
+export default WebSocketPool;

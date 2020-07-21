@@ -1,4 +1,4 @@
-import { getWebSocketResult, closeConnectionPool } from './wwpass.websocket';
+import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
 import { encodeClientKey } from '../crypto';
@@ -9,16 +9,13 @@ import { getClientNonceWrapper } from '../nonce';
 
 import { WWPASS_STATUS } from '../passkey/constants';
 
-import { QRCodePromise, clearQRCode, setRefersh } from './ui';
-
-// todo: return style when qrcode updating
-// const DEFAULT_WAIT_CLASS = 'focused';
-// style.transition = 'all .4s ease-out';
-// style.opacity = '.3';
+import {
+  QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
+} from './ui';
+import { getUniversalURL } from '../urls';
 
 const PROTOCOL_VERSION = 2;
 
-const WAIT_ON_CLICK = 2000;
 const WAIT_ON_ERROR = 500;
 
 function wait(ms) {
@@ -26,91 +23,103 @@ function wait(ms) {
   return null;
 }
 
-const tryQRCodeAuth = async (options) => {
-  const { log } = options;
-  try {
-    log(options);
-    clearQRCode(options.qrcode, options.qrcodeStyle);
+const appAuth = async (initialOptions) => {
+  const defaultOptions = {
+    universal: false,
+    ticketURL: undefined,
+    callbackURL: undefined,
+    version: 2,
+    ppx: 'wwp_',
+    log: () => {}
+  };
+  const options = { ...defaultOptions, ...initialOptions };
+  const result = await sameDeviceLogin(options.qrcode);
+  if (result.away) {
     const json = await getTicket(options.ticketURL);
     const response = ticketAdapter(json);
     const { ticket } = response;
     const { ttl } = response;
     const key = await getClientNonceWrapper(ticket, ttl);
-    const wwpassURLoptions = {
-      universal: options.universal,
+    window.location.href = getUniversalURL({
       ticket,
       callbackURL: options.callbackURL,
+      clientKey: key ? encodeClientKey(key) : undefined,
       ppx: options.ppx,
-      version: PROTOCOL_VERSION,
-      clientKey: key ? encodeClientKey(key) : undefined
-    };
-    const result = await Promise.race([
-      QRCodePromise(options.qrcode, wwpassURLoptions, ttl, options.qrcodeStyle),
-      getWebSocketResult({
-        callbackURL: options.callbackURL,
+      version: PROTOCOL_VERSION
+    });
+  }
+  return result;
+};
+
+const qrCodeAuth = async (options, websocketPool) => {
+  // Continue until an exception is thrown or qrcode element is removed from DOM
+  do {
+    try {
+      clearQRCode(options.qrcode, options.qrcodeStyle);
+      // eslint-disable-next-line no-await-in-loop
+      const json = await getTicket(options.ticketURL);
+      const response = ticketAdapter(json);
+      const { ticket } = response;
+      const { ttl } = response;
+      // eslint-disable-next-line no-await-in-loop
+      const key = await getClientNonceWrapper(ticket, ttl);
+      const wwpassURLoptions = {
         ticket,
-        log,
-        development: options.development,
-        version: options.version,
+        callbackURL: options.callbackURL,
         ppx: options.ppx,
-        spfewsAddress: options.spfewsAddress,
-        returnErrors: options.returnErrors
-      })
-    ]);
-    clearQRCode(options.qrcode, options.qrcodeStyle);
-    if (result.refresh) {
-      return {
-        status: WWPASS_STATUS.CONTINUE,
-        reason: 'Need to refresh QRCode'
+        version: PROTOCOL_VERSION,
+        clientKey: key ? encodeClientKey(key) : undefined
       };
+      websocketPool.watchTicket(ticket);
+      // eslint-disable-next-line no-await-in-loop
+      const result = await QRCodeLogin(options.qrcode, wwpassURLoptions, ttl, options.qrcodeStyle);
+      if (!result.refresh) return result;
+    } catch (err) {
+      if (!err.status) {
+        options.log('QRCode auth error', err);
+        // eslint-disable-next-line no-await-in-loop
+        await setRefersh(options.qrcode, err);
+        clearQRCode(options.qrcode, options.qrcodeStyle);
+      } else {
+        clearQRCode(options.qrcode, options.qrcodeStyle);
+        if (err.status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
+          return err;
+        }
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await wait(WAIT_ON_ERROR);
     }
+  } while (document.documentElement.contains(options.qrcode));
+  return {
+    status: WWPASS_STATUS.TERMINAL_ERROR,
+    reason: 'QRCode element is not in DOM'
+  };
+};
+
+const qrCodeAuthWrapper = (options) => new Promise((resolve) => {
+  const websocketPool = new WebSocketPool(options);
+  websocketPool.promise.then((result) => {
     if (result.clientKey && options.catchClientKey) {
       options.catchClientKey(result.clientKey);
     }
-    if (result.away) {
-      closeConnectionPool();
-      return {
-        status: WWPASS_STATUS.OK,
-        reason: 'User clicked on QRCode'
-      };
-    }
-    return result;
-  } catch (err) {
-    if (!err.status) {
-      log('QRCode auth error', err);
-      await setRefersh(options.qrcode, err);
-      clearQRCode(options.qrcode, options.qrcodeStyle);
-      return {
-        status: WWPASS_STATUS.NETWORK_ERROR,
-        reason: err
-      };
-    }
-    clearQRCode(options.qrcode, options.qrcodeStyle);
-    if (err.status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
-      navigateToCallback(err);
-      return err;
-    }
-    if (err.status === WWPASS_STATUS.TICKET_TIMEOUT) {
-      log('ticket timed out');
-    }
-    return err;
-  }
-};
-
-const getDelay = (status) => {
-  switch (status) {
-  case WWPASS_STATUS.OK:
-    return WAIT_ON_CLICK;
-  case WWPASS_STATUS.CONTINUE:
-    return 0;
-  default:
-    return WAIT_ON_ERROR;
-  }
-};
-
+    resolve({
+      ticket: result.ticket,
+      callbackURL: options.callbackURL,
+      ppx: options.ppx,
+      version: PROTOCOL_VERSION
+    });
+  }).catch((err) => {
+    options.log(err);
+    if (err.status) resolve(err);
+    else resolve({ status: WWPASS_STATUS.INTERNAL_ERROR, reason: err });
+  });
+  return qrCodeAuth(options, websocketPool).finally(() => {
+    websocketPool.close();
+  });
+});
 
 /*
- * WWPass QR code auth function
+ * WWPass auth with mobile PassKey
  *
 options = {
     'ticketURL': undefined, // string
@@ -119,13 +128,10 @@ options = {
     'log': function (message) || console.log, // another log handler
 }
  */
-const wwpassQRCodeAuth = async (initialOptions) => {
+const wwpassMobileAuth = async (initialOptions) => {
   const defaultOptions = {
-    universal: false,
     ticketURL: undefined,
     callbackURL: undefined,
-    development: false,
-    once: false, // Repeat authentication while possible
     version: 2,
     ppx: 'wwp_',
     spfewsAddress: 'wss://spfews.wwpass.com',
@@ -135,10 +141,8 @@ const wwpassQRCodeAuth = async (initialOptions) => {
     },
     log: () => {}
   };
-
   const options = { ...defaultOptions, ...initialOptions };
   options.qrcodeStyle = { ...defaultOptions.qrcodeStyle, ...initialOptions.qrcodeStyle };
-
 
   if (!options.ticketURL) {
     throw Error('ticketURL not found');
@@ -151,13 +155,19 @@ const wwpassQRCodeAuth = async (initialOptions) => {
   if (!options.qrcode) {
     throw Error('Element not found');
   }
+  let executor = isMobile() ? appAuth : qrCodeAuthWrapper;
   // Continue until an exception is thrown or qrcode element is removed from DOM
   do {
     // eslint-disable-next-line no-await-in-loop
-    const result = await tryQRCodeAuth(options);
-    if (options.once && result.status !== WWPASS_STATUS.CONTINUE) return result;
-    // eslint-disable-next-line no-await-in-loop
-    await wait(getDelay(result.status));
+    const result = await executor(options);
+    if (result.button) {
+      executor = appAuth;
+    } else if (result.qrCodeAuth) {
+      executor = qrCodeAuthWrapper;
+    } else {
+      navigateToCallback(result);
+      return result;
+    }
   } while (document.documentElement.contains(options.qrcode));
   return {
     status: WWPASS_STATUS.TERMINAL_ERROR,
@@ -167,5 +177,5 @@ const wwpassQRCodeAuth = async (initialOptions) => {
 
 export {
   getTicket,
-  wwpassQRCodeAuth
+  wwpassMobileAuth as wwpassQRCodeAuth
 };

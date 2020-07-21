@@ -130,13 +130,13 @@ const debouncePageVisibilityFactory = (state = 'visible') => {
 
 const debouncePageVisible = debouncePageVisibilityFactory();
 
-const QRCodePromise = (
+const QRCodeLogin = (
   parentElement,
   wwpassURLoptions,
   ttl,
   qrcodeStyle
 ) => new Promise((resolve) => {
-  let QRCodeElement = document.createElement('canvas');
+  const QRCodeElement = document.createElement('canvas');
   QRCode.toCanvas(QRCodeElement,
     getUniversalURL(wwpassURLoptions, false),
     qrcodeStyle || {}, (error) => {
@@ -152,19 +152,15 @@ const QRCodePromise = (
   QRCodeElement.style.height = '100%';
   QRCodeElement.style.width = '100%';
 
-  if (isMobile()) {
-    // Wrapping QRCode canvas in <a>
-    const universalLinkElement = document.createElement('a');
-    universalLinkElement.href = getUniversalURL(wwpassURLoptions);
-
-    universalLinkElement.appendChild(QRCodeElement);
-    universalLinkElement.addEventListener('click', () => {
-      resolve({ away: true });
-    });
-    QRCodeElement = universalLinkElement;
-  }
-
+  const qrCodeSwitchLink = document.createElement('a');
+  qrCodeSwitchLink.style.backgroundColor = '#FFFFFF';
+  qrCodeSwitchLink.style.color = '#000F2C';
+  qrCodeSwitchLink.innerText = 'or log in on this device';
+  qrCodeSwitchLink.addEventListener('click', () => {
+    resolve({ button: true });
+  });
   removeLoader(parentElement);
+  parentElement.appendChild(qrCodeSwitchLink);
   parentElement.appendChild(QRCodeElement);
   setTimeout(() => {
     debouncePageVisible(() => {
@@ -173,10 +169,36 @@ const QRCodePromise = (
   }, ttl * 900);
 });
 
+const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
+  const universalLinkElement = document.createElement('a');
+  const loginButtonElement = document.createElement('div');
+  loginButtonElement.style.backgroundColor = '#000F2C';
+  loginButtonElement.style.color = '#FFFFFF';
+  loginButtonElement.style.width = '264px';
+  loginButtonElement.style.height = '48px';
+  loginButtonElement.innerText = 'Log in with WWPass';
+  const qrCodeSwitchLink = document.createElement('a');
+  qrCodeSwitchLink.style.backgroundColor = '#FFFFFF';
+  qrCodeSwitchLink.style.color = '#000F2C';
+  qrCodeSwitchLink.innerText = 'Show QRCode to login';
+  universalLinkElement.appendChild(loginButtonElement);
+  universalLinkElement.addEventListener('click', () => {
+    resolve({ away: true });
+  });
+  qrCodeSwitchLink.addEventListener('click', () => {
+    resolve({ qrcode: true });
+  });
+  removeLoader(parentElement);
+  parentElement.appendChild(loginButtonElement);
+  parentElement.appendChild(qrCodeSwitchLink);
+});
+
 const clearQRCode = (parentElement, style) => setLoader(parentElement, style);
 
 export {
-  QRCodePromise,
+  QRCodeLogin,
+  sameDeviceLogin,
   clearQRCode,
-  setRefersh
+  setRefersh,
+  isMobile
 };

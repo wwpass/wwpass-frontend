@@ -1,6 +1,6 @@
 jest.mock('../src/navigation',()=>(jest.fn()));
 
-import websocketPool from "../src/qrcode/wwpass.websocket";
+import WebSocketPool from "../src/qrcode/wwpass.websocket";
 
 var wsOnOpen = () => {};
 let wsSend =  () => {};
@@ -22,7 +22,7 @@ function flushPromises() {
 describe('wwpassWebSocket' ,() => {
 
   test('success', () => {
-    const wsPool = new websocketPool({});
+    const wsPool = new WebSocketPool({});
     wsPool.watchTicket("SP%20Name:scp:nonce@spfe.addr:1234");
     let socket = wsPool.connectionPool[0];
     expect(wsOnOpen).toBeCalledWith('wss://spfews.wwpass.com');
@@ -44,7 +44,7 @@ describe('wwpassWebSocket' ,() => {
   });
 
   test('success with OriginalTicket', () => {
-    const wsPool = new websocketPool({});
+    const wsPool = new WebSocketPool({});
     wsPool.watchTicket("SP%20Name:p:some_new_nonce@spfe.addr:1234");
     let socket = wsPool.connectionPool[0];
     expect(wsOnOpen).toBeCalledWith('wss://spfews.wwpass.com');
@@ -66,7 +66,7 @@ describe('wwpassWebSocket' ,() => {
   });
 
   test('wait fo two tickets', () => {
-    const wsPool = new websocketPool({});
+    const wsPool = new WebSocketPool({});
     wsPool.watchTicket("SP%20Name:p:some_new_nonce@spfe.addr:1234");
     let socket1 = wsPool.connectionPool[0];
     expect(wsOnOpen).toBeCalledWith('wss://spfews.wwpass.com');
