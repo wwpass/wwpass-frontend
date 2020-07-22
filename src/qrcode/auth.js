@@ -96,27 +96,29 @@ const qrCodeAuth = async (options, websocketPool) => {
   };
 };
 
-const qrCodeAuthWrapper = (options) => new Promise((resolve) => {
+const qrCodeAuthWrapper = (options) => {
   const websocketPool = new WebSocketPool(options);
-  websocketPool.promise.then((result) => {
-    if (result.clientKey && options.catchClientKey) {
-      options.catchClientKey(result.clientKey);
-    }
-    resolve({
-      ticket: result.ticket,
-      callbackURL: options.callbackURL,
-      ppx: options.ppx,
-      version: PROTOCOL_VERSION
-    });
-  }).catch((err) => {
-    options.log(err);
-    if (err.status) resolve(err);
-    else resolve({ status: WWPASS_STATUS.INTERNAL_ERROR, reason: err });
-  });
-  return qrCodeAuth(options, websocketPool).finally(() => {
+  return Promise.race([
+    websocketPool.promise.then((result) => {
+      if (result.clientKey && options.catchClientKey) {
+        options.catchClientKey(result.clientKey);
+      }
+      return ({
+        ticket: result.ticket,
+        callbackURL: options.callbackURL,
+        ppx: options.ppx,
+        version: PROTOCOL_VERSION
+      });
+    }).catch((err) => {
+      options.log(err);
+      if (err.status) return err;
+      return { status: WWPASS_STATUS.INTERNAL_ERROR, reason: err };
+    }),
+    qrCodeAuth(options, websocketPool)])
+  .finally(() => {
     websocketPool.close();
   });
-});
+};
 
 /*
  * WWPass auth with mobile PassKey
@@ -177,5 +179,5 @@ const wwpassMobileAuth = async (initialOptions) => {
 
 export {
   getTicket,
-  wwpassMobileAuth as wwpassQRCodeAuth
+  wwpassMobileAuth
 };

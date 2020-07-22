@@ -1,4 +1,4 @@
-import { wwpassQRCodeAuth } from './qrcode/auth';
+import { wwpassMobileAuth } from './qrcode/auth';
 import { wwpassPasskeyAuth } from './passkey/auth';
 
 const absolutePath = (href) => {
@@ -29,7 +29,7 @@ const authInit = (initialOptions) => {
   if (options.passkeyButton) {
     promises.push(wwpassPasskeyAuth(options));
   }
-  promises.push(wwpassQRCodeAuth(options));
+  promises.push(wwpassMobileAuth(options));
   return Promise.race(promises);
 };
 

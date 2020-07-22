@@ -160,8 +160,8 @@ const QRCodeLogin = (
     resolve({ button: true });
   });
   removeLoader(parentElement);
-  parentElement.appendChild(qrCodeSwitchLink);
   parentElement.appendChild(QRCodeElement);
+  parentElement.appendChild(qrCodeSwitchLink);
   setTimeout(() => {
     debouncePageVisible(() => {
       resolve({ refresh: true });
@@ -189,7 +189,7 @@ const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
     resolve({ qrcode: true });
   });
   removeLoader(parentElement);
-  parentElement.appendChild(loginButtonElement);
+  parentElement.appendChild(universalLinkElement);
   parentElement.appendChild(qrCodeSwitchLink);
 });
 

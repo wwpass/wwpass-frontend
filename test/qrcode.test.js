@@ -2,17 +2,15 @@ import './crypto.mock';
 import 'jest-canvas-mock';
 import {TextEncoder} from 'text-encoding';
 global.TextEncoder = TextEncoder;
-import { getWebSocketResult } from '../src/qrcode/wwpass.websocket';
-jest.mock('../src/qrcode/wwpass.websocket',()=>({
-  getWebSocketResult: jest.fn()
-}));
 
-jest.mock('../src/navigation',()=>( jest.fn()
-));
+import WebSocketPool from '../src/qrcode/wwpass.websocket';
+jest.mock('../src/qrcode/wwpass.websocket');
+jest.mock('../src/navigation',()=>( jest.fn()));
 
 
-import { wwpassQRCodeAuth } from '../src/qrcode/auth';
-import { QRCodePromise } from '../src/qrcode/ui';
+
+import { wwpassMobileAuth } from '../src/qrcode/auth';
+import { QRCodeLogin, sameDeviceLogin } from '../src/qrcode/ui';
 import { b64ToAb } from '../src/ab';
 
 
@@ -54,28 +52,33 @@ const clientNonce = b64ToAb('iyJFFNoEh9PUeXqV+TwQ14+eT/zGkswdGx2WNhTxNkk=');
 
 describe('renderQRcode', () => {
   test('should create element', () => {
-    QRCodePromise(document.getElementById('qrcode'),
+    QRCodeLogin(document.getElementById('qrcode'),
     {
       ticket: 'SP%20Name:scp:nonce@spfe.addr:1234',
       callbackURL: 'https://callback.url'
     },10);
     expect(document.getElementById('qrcode').firstChild).toBeDefined();
   });
+
   test('should create element anchor with correct URL', () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
-    QRCodePromise(document.getElementById('qrcode'), {
+    const loginPromise = sameDeviceLogin(document.getElementById('qrcode'), {
       ticket: 'SP%20Name:sp:nonce@spfe.addr:1234',
       callbackURL: 'https://callback.url'
     },10);
 
     const element = document.getElementById('qrcode').firstChild;
     expect(element.tagName).toEqual('A');
-    expect(element.href).toEqual('wwpass://auth?v=2&t=SP%2520Name%3Asp%3Anonce%40spfe.addr%3A1234&ppx=wwp_&c=https%3A%2F%2Fcallback.url');
-    expect(element.firstChild.tagName).toEqual('CANVAS');
+    expect(element.href).toEqual('');
+    element.click();
+    return loginPromise.then((res) => {
+      expect(res).toEqual({away: true});
+    });
   });
+
   test('should create element canvas (desktop)', () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
-    QRCodePromise(document.getElementById('qrcode'),
+    QRCodeLogin(document.getElementById('qrcode'),
     {
       ticket: 'SP%20Name:scp:nonce@spfe.addr:1234',
       callbackURL: 'https://callback.url'
@@ -86,16 +89,16 @@ describe('renderQRcode', () => {
   });
 });
 
-describe('wwpassQRcodeAuth', () => {
-  test('successful test with clentKey',() => {
-    getWebSocketResult.mockImplementation(() => Promise.resolve({
-      ppx: 'wwp_',
-      version: 2,
+describe('wwpassMobileAuth', () => {
+  test('successful test with clentKey',async () => {
+    WebSocketPool.prototype.promise = Promise.resolve({
       status: 200,
       reason: 'OK',
-      callbackURL: 'https://callback.url',
-      clientKey: '123456'
-    }));
+      clientKey: '123456',
+      ticket: 'TestTicket',
+      ttl: 120,
+      originalTicket: 'TestTicket'
+    });
     const options = {
       universal: false,
       ticketURL: 'https://ticket.url/',
@@ -106,33 +109,24 @@ describe('wwpassQRcodeAuth', () => {
       qrcode: document.getElementById('qrcode'),
       once: true,
     };
-    return wwpassQRCodeAuth(options).then((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
-      expect(result).toEqual({
-        ppx: 'wwp_',
-        version: 2,
-        status: 200,
-        reason: 'OK',
-        callbackURL: 'https://callback.url',
-        clientKey: '123456'
-      });
+    const result = await wwpassMobileAuth(options);
+    expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
+    expect(result).toEqual({
+      ppx: 'wwp_',
+      version: 2,
+      callbackURL: 'https://callback.url/',
+      ticket: "TestTicket"
     });
   });
 
   test('test element deletion',() => {
-    getWebSocketResult.mockImplementation(() => {
-      getWebSocketResult.mockImplementation(() =>
-        Promise.resolve({
-          ppx: 'wwp_',
-          version: 2,
-          status: 200,
-          reason: 'OK',
-          callbackURL: 'https://callback.url',
-        }));
+    WebSocketPool.prototype.promise = new Promise(()=>{});
+    WebSocketPool.prototype.watchTicket.mockImplementationOnce(() => {
+      setImmediate(() => {
         document.getElementById('qrcode').remove();
         jest.advanceTimersByTime(150000);
-        return new Promise(()=>{});
       });
+    });
     const options = {
       universal: false,
       ticketURL: 'https://ticket.url/',
@@ -142,7 +136,7 @@ describe('wwpassQRcodeAuth', () => {
       spfewsAddress: 'wss://spfews.wwpass.com',
       qrcode: document.getElementById('qrcode'),
     };
-    const ret = wwpassQRCodeAuth(options).then((result) => {
+    const ret = wwpassMobileAuth(options).then((result) => {
       expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
       expect(result).toEqual({
         reason: 'QRCode element is not in DOM',
@@ -152,45 +146,12 @@ describe('wwpassQRcodeAuth', () => {
     return ret;
   });
 
-  test('Unsuccessful test with clentKey',() => {
-    getWebSocketResult.mockImplementation(() => Promise.reject({
-      ppx: 'wwp_',
-      version: 2,
-      status: 500,
-      reason: 'Fail',
-      callbackURL: 'https://callback.url',
-    }));
-    const options = {
-      universal: false,
-      ticketURL: 'https://ticket.url/',
-      callbackURL: 'https://callback.url/',
-      version: 2,
-      ppx: 'wwp_',
-      spfewsAddress: 'wss://spfews.wwpass.com',
-      qrcode: document.getElementById('qrcode'),
-      once: true,
-    };
-    return wwpassQRCodeAuth(options).catch((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
-      expect(result).toEqual({
-        ppx: 'wwp_',
-        version: 2,
-        status: 500,
-        reason: 'Fail',
-        callbackURL: 'https://callback.url',
-      });
-    });
-  });
-
-  test('Unsuccessful test without clentKey',() => {
+  test('Unsuccessful test',() => {
     ticket = 'SP%20Name:sp:nonce@spfe.addr:1234';
-    getWebSocketResult.mockImplementation(() => Promise.reject({
-      ppx: 'wwp_',
-      version: 2,
+    WebSocketPool.prototype.promise = Promise.reject({
       status: 500,
       reason: 'Fail',
-      callbackURL: 'https://callback.url',
-    }));
+    });
     const options = {
       universal: false,
       ticketURL: 'https://ticket.url/',
@@ -199,34 +160,35 @@ describe('wwpassQRcodeAuth', () => {
       ppx: 'wwp_',
       spfewsAddress: 'wss://spfews.wwpass.com',
       qrcode: document.getElementById('qrcode'),
-      once: true,
     };
-    return wwpassQRCodeAuth(options).then(jest.fa).catch((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
-      expect(result).toEqual({
-        ppx: 'wwp_',
-        version: 2,
+    return expect(wwpassMobileAuth(options)).resolves.toEqual(
+      {
         status: 500,
         reason: 'Fail',
-        callbackURL: 'https://callback.url',
-      });
-    });
+      }
+    );
   });
 
   test('Successful test with timeouts',() => {
     ticket = 'SP%20Name:sp:nonce@spfe.addr:1234';
-    getWebSocketResult.mockImplementation(() => {
-      getWebSocketResult.mockImplementation(() =>
-        Promise.resolve({
-          ppx: 'wwp_',
-          version: 2,
-          status: 200,
-          reason: 'OK',
-          callbackURL: 'https://callback.url',
-        }));
-        jest.advanceTimersByTime(15000);
-        return new Promise(()=>{});
+    let resolve;
+    WebSocketPool.prototype.promise = new Promise((rs)=>{resolve = rs;});
+    WebSocketPool.prototype.watchTicket.mockClear();
+    WebSocketPool.prototype.watchTicket.mockImplementationOnce((t) => {
+      setImmediate(() => {
+        jest.advanceTimersByTime(150000);
+        WebSocketPool.prototype.watchTicket.mockImplementationOnce(() => {
+          resolve({
+            status: 200,
+            reason: 'OK',
+            clientKey: '123456',
+            ticket: 'TestTicket',
+            ttl: 120,
+            originalTicket: 'TestTicket'
+          });
+        });
       });
+    });
     const options = {
       universal: false,
       ticketURL: 'https://ticket.url/',
@@ -239,15 +201,14 @@ describe('wwpassQRcodeAuth', () => {
     };
 
     global.fetch.mockClear(0);
-    return wwpassQRCodeAuth(options).then((result) => {
+    return wwpassMobileAuth(options).then((result) => {
       expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
       expect(global.fetch).toHaveBeenCalledTimes(2);
       expect(result).toEqual({
         ppx: 'wwp_',
         version: 2,
-        status: 200,
-        reason: 'OK',
-        callbackURL: 'https://callback.url',
+        callbackURL: 'https://callback.url/',
+        ticket: "TestTicket"
       });
     });
   });
