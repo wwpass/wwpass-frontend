@@ -42,10 +42,10 @@ function qrToElements(qr, size) {
     return res;
   }
 
-  return drawRef(drawRects(res));
+  return drawRects(drawRef());
 }
 
-export default function renderQR(text, opts) {
+function renderQR(text, opts) {
   const qrData = QRCode.create(text, opts);
   const color = 'black';
   const qrMargin = 4;
@@ -61,3 +61,5 @@ export default function renderQR(text, opts) {
 
   return svgTag;
 }
+
+export {renderQR}
