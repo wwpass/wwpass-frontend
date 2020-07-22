@@ -42,7 +42,7 @@ class WebSocketPool {
     this.connectionPool.push(socket);
     const { log } = this.options;
     let clientKey;
-    let originalTicket;
+    let originalTicket = null;
     let ttl;
 
     socket.onopen = () => {

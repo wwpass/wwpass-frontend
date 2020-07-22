@@ -38,7 +38,7 @@ describe('wwpassWebSocket' ,() => {
         reason: 'OK',
         ticket: 'SP%20Name:scp:nonce@spfe.addr:1234',
         clientKey: '123456',
-        ttl: null }
+        ttl: undefined }
       );
     });
   });
