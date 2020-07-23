@@ -147,6 +147,17 @@ const QRCodePromise = (
   QRCodeElement.style.height = '100%';
   QRCodeElement.style.width = '100%';
 
+  const innerSizeCoef = 15;
+  const innerPosition = (100 - innerSizeCoef) / 2;
+  const littleSvgImg = document.createElement('img');
+  littleSvgImg.style.display = 'block';
+  littleSvgImg.style.height = `${innerSizeCoef}%`;
+  littleSvgImg.style.width = `${innerSizeCoef}%`;
+  littleSvgImg.style.position = 'absolute';
+  littleSvgImg.style.top = `${innerPosition}%`;
+  littleSvgImg.style.left = `${innerPosition}%`;
+  littleSvgImg.src = '/static/Gradient.svg';
+
   if (isMobile()) {
     // Wrapping QRCode canvas in <a>
     const universalLinkElement = document.createElement('a');
@@ -160,6 +171,8 @@ const QRCodePromise = (
   }
 
   removeLoader(parentElement);
+  QRCodeElement.style.position = 'relative';
+  QRCodeElement.appendChild(littleSvgImg);
   parentElement.appendChild(QRCodeElement);
   setTimeout(() => {
     debouncePageVisible(() => {
