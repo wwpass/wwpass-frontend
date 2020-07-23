@@ -1,4 +1,4 @@
-import QRCode from 'qrcode';
+import {renderQR} from './renderQR';
 import { getUniversalURL } from '../urls';
 import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
@@ -148,21 +148,26 @@ const QRCodeLogin = (
   ttl,
   qrcodeStyle
 ) => new Promise((resolve) => {
-  const QRCodeElement = document.createElement('canvas');
-  QRCode.toCanvas(QRCodeElement,
-    getUniversalURL(wwpassURLoptions, false),
-    qrcodeStyle || {}, (error) => {
-      if (error) {
-        throw error;
-      }
-    });
+  const QRCodeElement = document.createElement('div');
+  QRCodeElement.innerHTML = renderQR(getUniversalURL(wwpassURLoptions, false), qrcodeStyle || {});
   if (qrcodeStyle) {
-    QRCodeElement.className = `${qrcodeStyle.prefix}qrcode_canvas`;
+    QRCodeElement.className = `${qrcodeStyle.prefix}qrcode_div`;
     QRCodeElement.style.max_width = `${qrcodeStyle.width}px`;
     QRCodeElement.style.max_height = `${qrcodeStyle.width}px`;
   }
   QRCodeElement.style.height = '90%';
   QRCodeElement.style.width = '90%';
+
+  const innerSizeCoef = 15;
+  const innerPosition = (100 - innerSizeCoef) / 2;
+  const littleSvgImg = document.createElement('img');
+  littleSvgImg.style.display = 'block';
+  littleSvgImg.style.height = `${innerSizeCoef}%`;
+  littleSvgImg.style.width = `${innerSizeCoef}%`;
+  littleSvgImg.style.position = 'absolute';
+  littleSvgImg.style.top = `${innerPosition}%`;
+  littleSvgImg.style.left = `${innerPosition}%`;
+  littleSvgImg.src = '/static/Gradient.svg';
 
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.style = switchLinkStyle;
@@ -171,6 +176,8 @@ const QRCodeLogin = (
     resolve({ button: true });
   });
   removeLoader(parentElement);
+  QRCodeElement.style.position = 'relative';
+  QRCodeElement.appendChild(littleSvgImg);
   parentElement.appendChild(QRCodeElement);
   parentElement.appendChild(qrCodeSwitchLink);
   setTimeout(() => {
