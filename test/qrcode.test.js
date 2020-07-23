@@ -3,15 +3,18 @@ import 'jest-canvas-mock';
 import {TextEncoder} from 'text-encoding';
 global.TextEncoder = TextEncoder;
 
+import { b64ToAb } from '../src//ab';
 import WebSocketPool from '../src/qrcode/wwpass.websocket';
+import { navigateToCallback, navigateToMobileApp } from '../src/navigation';
+import { getClientNonceWrapper } from '../src/nonce';
 jest.mock('../src/qrcode/wwpass.websocket');
-jest.mock('../src/navigation',()=>( jest.fn()));
-
+jest.mock('../src/nonce',()=>( {getClientNonceWrapper: jest.fn() } ));
+jest.mock('../src/navigation',()=>( {navigateToCallback: jest.fn(), navigateToMobileApp: jest.fn() } ));
+getClientNonceWrapper.mockImplementation(() => Promise.resolve(b64ToAb("y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4=")));
 
 
 import { wwpassMobileAuth } from '../src/qrcode/auth';
 import { QRCodeLogin, sameDeviceLogin } from '../src/qrcode/ui';
-import { b64ToAb } from '../src/ab';
 
 
 const UserAgent = {
@@ -32,23 +35,13 @@ global.fetch = jest.fn().mockImplementation(() => Promise.resolve(
 ));
 
 beforeEach(() => {
+  navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
   ticket = 'SP%20Name:scp:nonce@spfe.addr:1234';
   document.body.innerHTML = '<div id="qrcode"></div>';
   global.document = document;
   global.fetch.mockClear();
+  jest.useFakeTimers();
 });
-
-jest.useFakeTimers();
-
-// todo chack for event listeners (click on QR code)
-
-const initialOptions = Object.freeze({
-  ticket: 'SP%20Name:sp:nonce@spfe.addr:1234',
-  callbackURL: 'https://callback.url',
-  fn: () => {}
-});
-
-const clientNonce = b64ToAb('iyJFFNoEh9PUeXqV+TwQ14+eT/zGkswdGx2WNhTxNkk=');
 
 describe('renderQRcode', () => {
   test('should create element', () => {
@@ -60,7 +53,7 @@ describe('renderQRcode', () => {
     expect(document.getElementById('qrcode').firstChild).toBeDefined();
   });
 
-  test('should create element anchor with correct URL', () => {
+  test('should create element anchor with click listener', async () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
     const loginPromise = sameDeviceLogin(document.getElementById('qrcode'), {
       ticket: 'SP%20Name:sp:nonce@spfe.addr:1234',
@@ -71,9 +64,23 @@ describe('renderQRcode', () => {
     expect(element.tagName).toEqual('A');
     expect(element.href).toEqual('');
     element.click();
-    return loginPromise.then((res) => {
-      expect(res).toEqual({away: true});
-    });
+    const res = await loginPromise;
+    expect(res).toEqual({ away: true });
+  });
+
+  test('should create element anchor for switching to QR code', async () => {
+    navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
+    const loginPromise = sameDeviceLogin(document.getElementById('qrcode'), {
+      ticket: 'SP%20Name:sp:nonce@spfe.addr:1234',
+      callbackURL: 'https://callback.url'
+    },10);
+
+    const element = document.getElementById('qrcode').firstChild.nextSibling;
+    expect(element.tagName).toEqual('A');
+    expect(element.href).toEqual('');
+    element.click();
+    const res = await loginPromise;
+    expect(res).toEqual({ qrcode: true });
   });
 
   test('should create element canvas (desktop)', () => {
@@ -87,9 +94,113 @@ describe('renderQRcode', () => {
     const element = document.getElementById('qrcode').firstChild;
     expect(element.tagName).toEqual('CANVAS');
   });
+
+  test('should create element ancor for switching to button', async () => {
+    navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
+    const loginPromise = QRCodeLogin(document.getElementById('qrcode'),
+    {
+      ticket: 'SP%20Name:scp:nonce@spfe.addr:1234',
+      callbackURL: 'https://callback.url'
+    },10);
+
+    const element = document.getElementById('qrcode').firstChild.nextSibling;
+    expect(element.tagName).toEqual('A');
+    expect(element.href).toEqual('');
+    element.click();
+    const res = await loginPromise;
+    expect(res).toEqual({ button: true });
+
+  });
 });
 
 describe('wwpassMobileAuth', () => {
+  test('mobile detection and switching to button',async () => {
+    WebSocketPool.prototype.promise = new Promise(() => {});
+    const options = {
+      universal: false,
+      ticketURL: 'https://ticket.url/',
+      callbackURL: 'https://callback.url/',
+      version: 2,
+      ppx: 'wwp_',
+      spfewsAddress: 'wss://spfews.wwpass.com',
+      qrcode: document.getElementById('qrcode'),
+      once: true,
+    };
+    navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
+    const loginPromise = wwpassMobileAuth(options);
+    jest.useRealTimers();
+    await new Promise(r => setTimeout(r, 10));
+    expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
+    global.fetch.mockClear()
+    const switchElement = document.getElementById('qrcode').firstChild.nextSibling;
+    switchElement.click();
+    await new Promise(r => setTimeout(r, 10));
+    const buttonElement = document.getElementById('qrcode').firstChild;
+    expect(buttonElement.tagName).toEqual('A');
+    getClientNonceWrapper.mockImplementationOnce(() => Promise.resolve(b64ToAb("y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4=")));
+    buttonElement.click();
+    const result = await loginPromise;
+    expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
+    expect(result).toEqual({
+      away: true
+    });
+    expect(navigateToMobileApp).toBeCalledWith( {
+         "callbackURL": "https://callback.url/",
+         "clientKey": "y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4_",
+         "ppx": "wwp_",
+         "ticket": "SP%20Name:scp:nonce@spfe.addr:1234",
+         "version": 2,
+       });
+  });
+
+  test('mobile detection and switching to qrcode',async () => {
+    let resolve;
+    WebSocketPool.prototype.promise = new Promise((r) => {resolve = r});
+    const options = {
+      universal: false,
+      ticketURL: 'https://ticket.url/',
+      callbackURL: 'https://callback.url/',
+      version: 2,
+      ppx: 'wwp_',
+      spfewsAddress: 'wss://spfews.wwpass.com',
+      qrcode: document.getElementById('qrcode'),
+      once: true,
+    };
+    navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
+    const loginPromise = wwpassMobileAuth(options);
+    jest.useRealTimers();
+    await new Promise(r => setTimeout(r, 10));
+    expect(global.fetch).not.toBeCalled();
+    global.fetch.mockClear()
+    const switchElement = document.getElementById('qrcode').firstChild.nextSibling;
+    switchElement.click();
+    await new Promise(r => setTimeout(r, 10));
+    const buttonElement = document.getElementById('qrcode').firstChild;
+    expect(buttonElement.tagName).toEqual('CANVAS');
+    expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
+    expect(getClientNonceWrapper).toBeCalledWith("SP%20Name:scp:nonce@spfe.addr:1234", 10);
+    resolve({
+      status: 200,
+      reason: 'OK',
+      clientKey: '123456',
+      ticket: 'TestTicket',
+      ttl: 120,
+      originalTicket: 'TestTicket'
+    });
+    const result = await loginPromise;
+    expect(result).toEqual({
+      "callbackURL": "https://callback.url/",
+      "ppx": "wwp_",
+      "ticket": "TestTicket",
+      "version": 2});
+    expect(navigateToCallback).toBeCalledWith( {
+         "callbackURL": "https://callback.url/",
+         "ppx": "wwp_",
+         "ticket": "TestTicket",
+         "version": 2,
+       });
+  });
+
   test('successful test with clentKey',async () => {
     WebSocketPool.prototype.promise = Promise.resolve({
       status: 200,
@@ -169,7 +280,7 @@ describe('wwpassMobileAuth', () => {
     );
   });
 
-  test('Successful test with timeouts',() => {
+  test('Successful test with timeouts',async () => {
     ticket = 'SP%20Name:sp:nonce@spfe.addr:1234';
     let resolve;
     WebSocketPool.prototype.promise = new Promise((rs)=>{resolve = rs;});
@@ -201,15 +312,14 @@ describe('wwpassMobileAuth', () => {
     };
 
     global.fetch.mockClear(0);
-    return wwpassMobileAuth(options).then((result) => {
-      expect(global.fetch).toBeCalledWith('https://ticket.url/', {"cache": "no-store", "headers": {"cache-control": "no-cache", "pragma": "no-cache"}});
-      expect(global.fetch).toHaveBeenCalledTimes(2);
-      expect(result).toEqual({
-        ppx: 'wwp_',
-        version: 2,
-        callbackURL: 'https://callback.url/',
-        ticket: "TestTicket"
-      });
+    const result = await wwpassMobileAuth(options);
+    expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({
+      ppx: 'wwp_',
+      version: 2,
+      callbackURL: 'https://callback.url/',
+      ticket: "TestTicket"
     });
   });
 

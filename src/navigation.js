@@ -1,4 +1,4 @@
-import { getCallbackURL } from './urls';
+import { getCallbackURL, getUniversalURL } from './urls';
 
 const navigateToCallback = (options) => {
   if (typeof (options.callbackURL) === 'function') {
@@ -8,4 +8,8 @@ const navigateToCallback = (options) => {
   }
 };
 
-export default navigateToCallback;
+const navigateToMobileApp = (options) => {
+  window.location.href = getUniversalURL(options);
+};
+
+export { navigateToCallback, navigateToMobileApp };
