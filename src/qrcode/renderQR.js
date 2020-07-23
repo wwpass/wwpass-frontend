@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import qrCodeLogoSVG from '../gradient.svg';
 
 function qrToElements(qr, size) {
   const height = 0.9;
@@ -47,17 +48,26 @@ function qrToElements(qr, size) {
 
 function renderQR(text, opts) {
   const qrData = QRCode.create(text, opts);
-  const color = 'black';
+  const color = '#000F2C';
   const qrMargin = 4;
   const size = qrData.modules.size;
   const data = qrData.modules.data;
   const qrcodesize = size + qrMargin * 2;
+  /* Size of inner logo SVG. 24% rounded to match odd number of untis
+   * + 0.1 to cover the gap between units */
+  const innerSize = Math.floor(qrcodesize * 0.12) * 2 + 1.1;
+  // Center the inner logo
+  const innerOffset = (qrcodesize - innerSize) / 2 - qrMargin;
   const g =
     `<g fill="${color}">
       ${qrToElements(data, size)}
     </g>`;
   const viewBox = `viewBox="${-qrMargin} ${-qrMargin} ${qrcodesize} ${qrcodesize}"`;
-  const svgTag = `<svg xmlns="http://www.w3.org/2000/svg" ${viewBox}> ${g} </svg>\n`;
+  const svgTag = `<svg xmlns="http://www.w3.org/2000/svg" ${viewBox}> ${g}
+  <svg x="${innerOffset}" y="${innerOffset}" width="${innerSize}" height="${innerSize}" viewBox="0 0 100 100">
+  ${qrCodeLogoSVG}
+  </svg>
+  </svg>`;
 
   return svgTag;
 }
