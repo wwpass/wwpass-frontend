@@ -13,6 +13,10 @@ import {
   QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
 } from './ui';
 
+const METHOD_KEY_NAME = 'wwpass.auth.method';
+const METHOD_QRCODE = 'qrcode';
+const METHOD_SAME_DEVICE = 'appRedirect';
+
 const PROTOCOL_VERSION = 2;
 
 const WAIT_ON_ERROR = 500;
@@ -39,6 +43,7 @@ const appAuth = async (initialOptions) => {
     const { ticket } = response;
     const { ttl } = response;
     const key = await getClientNonceWrapper(ticket, ttl);
+    window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
     navigateToMobileApp({
       ticket,
       callbackURL: options.callbackURL,
@@ -102,6 +107,7 @@ const qrCodeAuthWrapper = (options) => {
       if (result.clientKey && options.catchClientKey) {
         options.catchClientKey(result.clientKey);
       }
+      window.localStorage.setItem(METHOD_KEY_NAME, METHOD_QRCODE);
       return ({
         ticket: result.ticket,
         callbackURL: options.callbackURL,
@@ -156,7 +162,18 @@ const wwpassMobileAuth = async (initialOptions) => {
   if (!options.qrcode) {
     throw Error('Element not found');
   }
-  let executor = isMobile() ? appAuth : qrCodeAuthWrapper;
+  let executor;
+  switch (window.localStorage.getItem(METHOD_KEY_NAME)) {
+  case METHOD_QRCODE:
+    executor = qrCodeAuthWrapper;
+    break;
+  case METHOD_SAME_DEVICE:
+    executor = appAuth;
+    break;
+  default:
+    executor = isMobile() ? appAuth : qrCodeAuthWrapper;
+  }
+
   // Continue until an exception is thrown or qrcode element is removed from DOM
   do {
     // eslint-disable-next-line no-await-in-loop
