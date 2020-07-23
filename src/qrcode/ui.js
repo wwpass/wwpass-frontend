@@ -158,26 +158,15 @@ const QRCodeLogin = (
   QRCodeElement.style.height = '90%';
   QRCodeElement.style.width = '90%';
 
-  const innerSizeCoef = 15;
-  const innerPosition = (100 - innerSizeCoef) / 2;
-  const littleSvgImg = document.createElement('img');
-  littleSvgImg.style.display = 'block';
-  littleSvgImg.style.height = `${innerSizeCoef}%`;
-  littleSvgImg.style.width = `${innerSizeCoef}%`;
-  littleSvgImg.style.position = 'absolute';
-  littleSvgImg.style.top = `${innerPosition}%`;
-  littleSvgImg.style.left = `${innerPosition}%`;
-  littleSvgImg.src = '/static/Gradient.svg';
-
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.style = switchLinkStyle;
   qrCodeSwitchLink.innerText = 'or log in on this device';
   qrCodeSwitchLink.addEventListener('click', () => {
     resolve({ button: true });
   });
+
   removeLoader(parentElement);
   QRCodeElement.style.position = 'relative';
-  QRCodeElement.appendChild(littleSvgImg);
   parentElement.appendChild(QRCodeElement);
   parentElement.appendChild(qrCodeSwitchLink);
   setTimeout(() => {
