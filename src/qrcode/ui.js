@@ -185,12 +185,13 @@ const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
   universalLinkElement.style.display = 'inline-block';
   universalLinkElement.style.textAlign = 'center';
   universalLinkElement.style.width = '100%';
+  universalLinkElement.href = '#';
   universalLinkElement.innerHTML = loginButtonSGV;
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.style = switchLinkStyle;
   qrCodeSwitchLink.innerText = 'or show QRCode to login';
   universalLinkElement.addEventListener('click', () => {
-    resolve({ away: true });
+    resolve({ away: true, linkElement: universalLinkElement });
   });
   qrCodeSwitchLink.addEventListener('click', () => {
     resolve({ qrcode: true });

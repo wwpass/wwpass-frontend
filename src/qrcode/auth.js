@@ -3,7 +3,7 @@ import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
 import { encodeClientKey } from '../crypto';
 
-import { navigateToCallback, navigateToMobileApp } from '../navigation';
+import navigateToCallback from '../navigation';
 
 import { getClientNonceWrapper } from '../nonce';
 
@@ -12,6 +12,7 @@ import { WWPASS_STATUS } from '../passkey/constants';
 import {
   QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
 } from './ui';
+import { getUniversalURL } from '../urls';
 
 const METHOD_KEY_NAME = 'wwpass.auth.method';
 const METHOD_QRCODE = 'qrcode';
@@ -44,13 +45,14 @@ const appAuth = async (initialOptions) => {
     const { ttl } = response;
     const key = await getClientNonceWrapper(ticket, ttl);
     window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
-    navigateToMobileApp({
+    result.linkElement.href = getUniversalURL({
       ticket,
       callbackURL: options.callbackURL,
       clientKey: key ? encodeClientKey(key) : undefined,
       ppx: options.ppx,
       version: PROTOCOL_VERSION
     });
+    result.linkElement.click();
   }
   return result;
 };

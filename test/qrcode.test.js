@@ -5,16 +5,17 @@ global.TextEncoder = TextEncoder;
 
 import { b64ToAb } from '../src//ab';
 import WebSocketPool from '../src/qrcode/wwpass.websocket';
-import { navigateToCallback, navigateToMobileApp } from '../src/navigation';
+import navigateToCallback from '../src/navigation';
 import { getClientNonceWrapper } from '../src/nonce';
 jest.mock('../src/qrcode/wwpass.websocket');
 jest.mock('../src/nonce',()=>( {getClientNonceWrapper: jest.fn() } ));
-jest.mock('../src/navigation',()=>( {navigateToCallback: jest.fn(), navigateToMobileApp: jest.fn() } ));
+jest.mock('../src/navigation',()=>( jest.fn() ));
 getClientNonceWrapper.mockImplementation(() => Promise.resolve(b64ToAb("y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4=")));
 
 
 import { wwpassMobileAuth } from '../src/qrcode/auth';
 import { QRCodeLogin, sameDeviceLogin } from '../src/qrcode/ui';
+import { getUniversalURL } from '../src/urls';
 
 
 const UserAgent = {
@@ -62,10 +63,11 @@ describe('renderQRcode', () => {
 
     const element = document.getElementById('qrcode').firstChild;
     expect(element.tagName).toEqual('A');
-    expect(element.href).toEqual('');
+    expect(element.href).toEqual('http://localhost/#');
     element.click();
     const res = await loginPromise;
-    expect(res).toEqual({ away: true });
+    expect(res.away).toEqual(true);
+    expect(res.linkElement).toBeDefined();
   });
 
   test('should create element anchor for switching to QR code', async () => {
@@ -137,20 +139,20 @@ describe('wwpassMobileAuth', () => {
     await new Promise(r => setTimeout(r, 10));
     const buttonElement = document.getElementById('qrcode').firstChild;
     expect(buttonElement.tagName).toEqual('A');
+    buttonElement.addEventListener('click', (e) => {e.preventDefault();});
     getClientNonceWrapper.mockImplementationOnce(() => Promise.resolve(b64ToAb("y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4=")));
     buttonElement.click();
-    const result = await loginPromise;
+    const res = await loginPromise;
     expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
-    expect(result).toEqual({
-      away: true
-    });
-    expect(navigateToMobileApp).toBeCalledWith( {
+    expect(res.away).toEqual(true);
+    expect(res.linkElement).toBeDefined();
+    expect(res.linkElement.href).toEqual(getUniversalURL({
          "callbackURL": "https://callback.url/",
          "clientKey": "y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4_",
          "ppx": "wwp_",
          "ticket": "SP%20Name:scp:nonce@spfe.addr:1234",
          "version": 2,
-       });
+       }));
   });
 
   test('mobile detection and switching to qrcode',async () => {
