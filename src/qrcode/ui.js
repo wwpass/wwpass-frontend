@@ -22,6 +22,7 @@ const switchLinkStyle = `
   width: 100%;
   display: inline-block;
   text-decoration-line: underline;
+  cursor: pointer;
 `;
 
 let haveStyleSheet = false;
@@ -160,8 +161,8 @@ const QRCodeLogin = (
     QRCodeElement.style.max_width = `${qrcodeStyle.width}px`;
     QRCodeElement.style.max_height = `${qrcodeStyle.width}px`;
   }
-  QRCodeElement.style.height = '100%';
-  QRCodeElement.style.width = '100%';
+  QRCodeElement.style.height = '90%';
+  QRCodeElement.style.width = '90%';
 
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.style = switchLinkStyle;

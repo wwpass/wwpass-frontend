@@ -1,4 +1,4 @@
-const loginButtonSVG = `<svg width="248" height="48" viewBox="0 0 248 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+const loginButtonSVG = `<svg width="100%" height="48" viewBox="0 0 248 48" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="248" height="48">
 <rect width="248" height="48" fill="#000F2C"/>
 </mask>
