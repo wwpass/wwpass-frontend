@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import { getUniversalURL } from '../urls';
 import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
+import loginButtonSGV from './loginButton.svg';
 
 const isMobile = () => navigator && (
   ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i))
@@ -12,6 +13,16 @@ const removeLoader = (element) => {
     element.removeChild(element.firstChild);
   }
 };
+
+const switchLinkStyle = `
+  background: #FFFFFF;
+  color: #000F2C;
+  text-align: center;
+  padding: .3em 0;
+  width: 100%;
+  display: inline-block;
+  text-decoration-line: underline;
+`;
 
 let haveStyleSheet = false;
 const setLoader = (element, styles) => {
@@ -153,8 +164,7 @@ const QRCodeLogin = (
   QRCodeElement.style.width = '100%';
 
   const qrCodeSwitchLink = document.createElement('a');
-  qrCodeSwitchLink.style.backgroundColor = '#FFFFFF';
-  qrCodeSwitchLink.style.color = '#000F2C';
+  qrCodeSwitchLink.style = switchLinkStyle;
   qrCodeSwitchLink.innerText = 'or log in on this device';
   qrCodeSwitchLink.addEventListener('click', () => {
     resolve({ button: true });
@@ -171,17 +181,13 @@ const QRCodeLogin = (
 
 const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
   const universalLinkElement = document.createElement('a');
-  const loginButtonElement = document.createElement('div');
-  loginButtonElement.style.backgroundColor = '#000F2C';
-  loginButtonElement.style.color = '#FFFFFF';
-  loginButtonElement.style.width = '264px';
-  loginButtonElement.style.height = '48px';
-  loginButtonElement.innerText = 'Log in with WWPass';
+  universalLinkElement.style.display = 'inline-block';
+  universalLinkElement.style.textAlign = 'center';
+  universalLinkElement.style.width = '100%';
+  universalLinkElement.innerHTML = loginButtonSGV;
   const qrCodeSwitchLink = document.createElement('a');
-  qrCodeSwitchLink.style.backgroundColor = '#FFFFFF';
-  qrCodeSwitchLink.style.color = '#000F2C';
-  qrCodeSwitchLink.innerText = 'Show QRCode to login';
-  universalLinkElement.appendChild(loginButtonElement);
+  qrCodeSwitchLink.style = switchLinkStyle;
+  qrCodeSwitchLink.innerText = 'or show QRCode to login';
   universalLinkElement.addEventListener('click', () => {
     resolve({ away: true });
   });
