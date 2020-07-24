@@ -94,7 +94,7 @@ describe('renderQRcode', () => {
     },10);
 
     const element = document.getElementById('qrcode').firstChild;
-    expect(element.tagName).toEqual('CANVAS');
+    expect(element.tagName).toEqual('DIV');
   });
 
   test('should create element ancor for switching to button', async () => {
@@ -178,7 +178,7 @@ describe('wwpassMobileAuth', () => {
     switchElement.click();
     await new Promise(r => setTimeout(r, 10));
     const buttonElement = document.getElementById('qrcode').firstChild;
-    expect(buttonElement.tagName).toEqual('CANVAS');
+    expect(buttonElement.tagName).toEqual('DIV');
     expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
     expect(getClientNonceWrapper).toBeCalledWith("SP%20Name:scp:nonce@spfe.addr:1234", 10);
     resolve({
