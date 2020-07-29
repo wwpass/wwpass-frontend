@@ -10,7 +10,7 @@ function qrToElements(qr, size) {
   }
 
   function drawRefSquaire(x, y) {
-    const path = `<path d="M ${x} ${y} h 7 v 7 h -7 Z M ${x+1} ${y+1} v 5 h 5 v -5 Z"/>`;
+    const path = `<path d="M ${x} ${y} h 7 v 7 h -7 Z M ${x + 1} ${y + 1} v 5 h 5 v -5 Z"/>`;
     const rect = `<rect x="${x + 2}" y="${y + 2}" width="3" height="3"/>`;
     return path + rect;
   }
@@ -23,12 +23,16 @@ function qrToElements(qr, size) {
     return `<rect height="${height}" rx="${rx}" x="${x + dy}" y="${y + dy}" width="${length - 2 * dy}"/>`;
   }
 
-  function drawRects(res) {
-    let i, j, paint, startj;
-    for (i = 0; i < size; i++) {
+  function drawRects() {
+    let i;
+    let j;
+    let paint;
+    let startj;
+    let res = '';
+    for (i = 0; i < size; i += 1) {
       paint = false;
       startj = 0;
-      for (j = 0; j <= size; j++) {
+      for (j = 0; j <= size; j += 1) {
         const index = i * size + j;
         if (paint && (isSpecial(j, i) || j === size || qr[index] === 0)) {
           res += drawRect(startj, i, j - startj);
@@ -42,24 +46,19 @@ function qrToElements(qr, size) {
     return res;
   }
 
-  return drawRects(drawRef());
+  return `${drawRects()}${drawRef()}`;
 }
 
 function renderQR(text, opts) {
   const qrData = QRCode.create(text, opts);
   const color = 'black';
   const qrMargin = 4;
-  const size = qrData.modules.size;
-  const data = qrData.modules.data;
-  const qrcodesize = size + qrMargin * 2;
-  const g =
-    `<g fill="${color}">
-      ${qrToElements(data, size)}
-    </g>`;
+  const qrcodesize = qrData.modules.size + qrMargin * 2;
+  const g = `<g fill="${color}"> ${qrToElements(qrData.modules.data, qrData.modules.size)} </g>`;
   const viewBox = `viewBox="${-qrMargin} ${-qrMargin} ${qrcodesize} ${qrcodesize}"`;
   const svgTag = `<svg xmlns="http://www.w3.org/2000/svg" ${viewBox}> ${g} </svg>\n`;
 
   return svgTag;
 }
 
-export {renderQR}
+export default renderQR;

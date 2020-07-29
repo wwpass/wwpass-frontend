@@ -1,4 +1,4 @@
-import {renderQR} from './renderQR';
+import renderQR from './renderQR';
 import { getUniversalURL } from '../urls';
 import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
