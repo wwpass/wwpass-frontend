@@ -7,24 +7,30 @@ function qrToElements(qr, size) {
   const rx = 0.5;
 
   function isSpecial(x, y) {
+    // for a "pixel" of a QR-code, returns if it is in a reference squaire
+    // (reference squaires are not rendered with our special round-cornered style)
     return ((x < 8 && y < 8) || (x < 8 && y > (size - 9)) || (x > (size - 9) && y < 8));
   }
 
   function drawRefSquaire(x, y) {
+    // creates elements of SVG for big reference squaire
     const path = `<path d="M ${x} ${y} h 7 v 7 h -7 Z M ${x + 1} ${y + 1} v 5 h 5 v -5 Z"/>`;
     const rect = `<rect x="${x + 2}" y="${y + 2}" width="3" height="3"/>`;
     return path + rect;
   }
 
   function drawRef() {
+    // creates three big reference squaires in the corners of QR-code
     return drawRefSquaire(0, 0) + drawRefSquaire(0, size - 7) + drawRefSquaire(size - 7, 0);
   }
 
   function drawRect(x, y, length) {
+    // creates one rounded-cornered rectangle as an element of QR-code
     return `<rect height="${height}" rx="${rx}" x="${x + dy}" y="${y + dy}" width="${length - 2 * dy}"/>`;
   }
 
   function drawRects() {
+    // creates the main part of QR-code, made of round-cornered rectangles
     let i;
     let j;
     let paint;
