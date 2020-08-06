@@ -1,4 +1,4 @@
-import renderQR from './renderQR';
+import { renderQR, insertInnerSvg } from './renderQR';
 import { getUniversalURL } from '../urls';
 import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
@@ -138,7 +138,12 @@ const QRCodePromise = (
   qrcodeStyle
 ) => new Promise((resolve) => {
   let QRCodeElement = document.createElement('div');
-  QRCodeElement.innerHTML = renderQR(getUniversalURL(wwpassURLoptions, false), qrcodeStyle || {});
+  const { svgTag, qrcodesize, qrMargin } = renderQR(
+    getUniversalURL(wwpassURLoptions, false),
+    qrcodeStyle || {}
+  );
+  QRCodeElement.innerHTML = svgTag;
+  const svgDiv = QRCodeElement;
   if (qrcodeStyle) {
     QRCodeElement.className = `${qrcodeStyle.prefix}qrcode_div`;
     QRCodeElement.style.max_width = `${qrcodeStyle.width}px`;
@@ -160,8 +165,8 @@ const QRCodePromise = (
   }
 
   removeLoader(parentElement);
-  QRCodeElement.style.position = 'relative';
   parentElement.appendChild(QRCodeElement);
+  insertInnerSvg(svgDiv, qrcodesize, qrMargin);
   setTimeout(() => {
     debouncePageVisible(() => {
       resolve({ refresh: true });
