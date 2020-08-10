@@ -71,9 +71,10 @@ describe('renderQRcode', () => {
     const element = document.getElementById('qrcode').firstChild;
     expect(element.tagName).toEqual('A');
     expect(element.href).toEqual('wwpass://auth?v=2&t=SP%2520Name%3Asp%3Anonce%40spfe.addr%3A1234&ppx=wwp_&c=https%3A%2F%2Fcallback.url');
-    expect(element.firstChild.tagName).toEqual('CANVAS');
+    expect(element.firstChild.tagName).toEqual('DIV');
+    expect(element.firstChild.firstChild.tagName).toEqual('SVG');
   });
-  test('should create element canvas (desktop)', () => {
+  test('should create element svg (desktop)', () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
     QRCodePromise(document.getElementById('qrcode'),
     {
@@ -82,7 +83,8 @@ describe('renderQRcode', () => {
     },10);
 
     const element = document.getElementById('qrcode').firstChild;
-    expect(element.tagName).toEqual('CANVAS');
+    expect(element.tagName).toEqual('DIV');
+    expect(element.firstChild.tagName).toEqual('SVG');
   });
 });
 
