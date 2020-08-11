@@ -154,14 +154,14 @@ const QRCodeLogin = (
   QRCodeElement.style.width = '90%';
 
   const qrCodeSwitchLink = document.createElement('a');
-  qrCodeSwitchLink.background = '#FFFFFF';
-  qrCodeSwitchLink.color = '#000F2C';
-  qrCodeSwitchLink.textAlign = 'center';
-  qrCodeSwitchLink.padding = '.3em 0';
-  qrCodeSwitchLink.width = '100%';
-  qrCodeSwitchLink.display = 'inline-block';
-  qrCodeSwitchLink.textDecorationLine = 'underline';
-  qrCodeSwitchLink.cursor = 'pointer';
+  qrCodeSwitchLink.style.background = '#FFFFFF';
+  qrCodeSwitchLink.style.color = '#000F2C';
+  qrCodeSwitchLink.style.textAlign = 'center';
+  qrCodeSwitchLink.style.padding = '.3em 0';
+  qrCodeSwitchLink.style.width = '100%';
+  qrCodeSwitchLink.style.display = 'inline-block';
+  qrCodeSwitchLink.style.textDecorationLine = 'underline';
+  qrCodeSwitchLink.style.cursor = 'pointer';
   qrCodeSwitchLink.innerText = 'or log in on this device';
   qrCodeSwitchLink.addEventListener('click', () => {
     resolve({ button: true });
@@ -187,14 +187,14 @@ const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
   universalLinkElement.href = '#';
   universalLinkElement.innerHTML = loginButtonSGV;
   const qrCodeSwitchLink = document.createElement('a');
-  qrCodeSwitchLink.background = '#FFFFFF';
-  qrCodeSwitchLink.color = '#000F2C';
-  qrCodeSwitchLink.textAlign = 'center';
-  qrCodeSwitchLink.padding = '.3em 0';
-  qrCodeSwitchLink.width = '100%';
-  qrCodeSwitchLink.display = 'inline-block';
-  qrCodeSwitchLink.textDecorationLine = 'underline';
-  qrCodeSwitchLink.cursor = 'pointer';
+  qrCodeSwitchLink.style.background = '#FFFFFF';
+  qrCodeSwitchLink.style.color = '#000F2C';
+  qrCodeSwitchLink.style.textAlign = 'center';
+  qrCodeSwitchLink.style.padding = '.3em 0';
+  qrCodeSwitchLink.style.width = '100%';
+  qrCodeSwitchLink.style.display = 'inline-block';
+  qrCodeSwitchLink.style.textDecorationLine = 'underline';
+  qrCodeSwitchLink.style.cursor = 'pointer';
   qrCodeSwitchLink.innerText = 'or show QRCode to login';
   universalLinkElement.addEventListener('click', () => {
     resolve({ away: true, linkElement: universalLinkElement });
