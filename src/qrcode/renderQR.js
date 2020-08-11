@@ -1,6 +1,6 @@
 import QRCode from 'qrcode';
-import qrCodeLogoSVG from '../gradient.svg';
-import smallQrCodeLogoSVG from '../small_gradient.svg';
+import qrCodeLogoSVG from './gradient.svg';
+import smallQrCodeLogoSVG from './small_gradient.svg';
 
 function qrToElements(qr, size) {
   const height = 0.9;
