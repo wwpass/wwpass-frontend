@@ -72,7 +72,7 @@ describe('renderQRcode', () => {
     expect(element.tagName).toEqual('A');
     expect(element.href).toEqual('wwpass://auth?v=2&t=SP%2520Name%3Asp%3Anonce%40spfe.addr%3A1234&ppx=wwp_&c=https%3A%2F%2Fcallback.url');
     expect(element.firstChild.tagName).toEqual('DIV');
-    expect(element.firstChild.firstChild.tagName).toEqual('SVG');
+    expect(element.firstChild.firstChild.tagName).toEqual('svg');
   });
   test('should create element svg (desktop)', () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
@@ -84,7 +84,7 @@ describe('renderQRcode', () => {
 
     const element = document.getElementById('qrcode').firstChild;
     expect(element.tagName).toEqual('DIV');
-    expect(element.firstChild.tagName).toEqual('SVG');
+    expect(element.firstChild.tagName).toEqual('svg');
   });
 });
 
