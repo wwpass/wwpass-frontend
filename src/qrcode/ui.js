@@ -1,4 +1,4 @@
-import {renderQR} from './renderQR';
+import { renderQR } from './renderQR';
 import { getUniversalURL } from '../urls';
 import WWPassError from '../error';
 import { WWPASS_STATUS } from '../passkey/constants';
@@ -14,16 +14,6 @@ const removeLoader = (element) => {
   }
 };
 
-const switchLinkStyle = `
-  background: #FFFFFF;
-  color: #000F2C;
-  text-align: center;
-  padding: .3em 0;
-  width: 100%;
-  display: inline-block;
-  text-decoration-line: underline;
-  cursor: pointer;
-`;
 
 let haveStyleSheet = false;
 const setLoader = (element, styles) => {
@@ -159,7 +149,14 @@ const QRCodeLogin = (
   QRCodeElement.style.width = '90%';
 
   const qrCodeSwitchLink = document.createElement('a');
-  qrCodeSwitchLink.style = switchLinkStyle;
+  qrCodeSwitchLink.background = '#FFFFFF';
+  qrCodeSwitchLink.color = '#000F2C';
+  qrCodeSwitchLink.textAlign = 'center';
+  qrCodeSwitchLink.padding = '.3em 0';
+  qrCodeSwitchLink.width = '100%';
+  qrCodeSwitchLink.display = 'inline-block';
+  qrCodeSwitchLink.textDecorationLine = 'underline';
+  qrCodeSwitchLink.cursor = 'pointer';
   qrCodeSwitchLink.innerText = 'or log in on this device';
   qrCodeSwitchLink.addEventListener('click', () => {
     resolve({ button: true });
@@ -184,7 +181,14 @@ const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
   universalLinkElement.href = '#';
   universalLinkElement.innerHTML = loginButtonSGV;
   const qrCodeSwitchLink = document.createElement('a');
-  qrCodeSwitchLink.style = switchLinkStyle;
+  qrCodeSwitchLink.background = '#FFFFFF';
+  qrCodeSwitchLink.color = '#000F2C';
+  qrCodeSwitchLink.textAlign = 'center';
+  qrCodeSwitchLink.padding = '.3em 0';
+  qrCodeSwitchLink.width = '100%';
+  qrCodeSwitchLink.display = 'inline-block';
+  qrCodeSwitchLink.textDecorationLine = 'underline';
+  qrCodeSwitchLink.cursor = 'pointer';
   qrCodeSwitchLink.innerText = 'or show QRCode to login';
   universalLinkElement.addEventListener('click', () => {
     resolve({ away: true, linkElement: universalLinkElement });
