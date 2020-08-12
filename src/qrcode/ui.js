@@ -162,7 +162,7 @@ const QRCodeLogin = (
   qrCodeSwitchLink.style.display = 'inline-block';
   qrCodeSwitchLink.style.textDecorationLine = 'underline';
   qrCodeSwitchLink.style.cursor = 'pointer';
-  qrCodeSwitchLink.innerText = 'or log in on this device';
+  qrCodeSwitchLink.innerText = 'or use WWPass Key on this device';
   qrCodeSwitchLink.addEventListener('click', () => {
     resolve({ button: true });
   });
@@ -195,7 +195,7 @@ const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
   qrCodeSwitchLink.style.display = 'inline-block';
   qrCodeSwitchLink.style.textDecorationLine = 'underline';
   qrCodeSwitchLink.style.cursor = 'pointer';
-  qrCodeSwitchLink.innerText = 'or show QRCode to login';
+  qrCodeSwitchLink.innerText = 'or show QRCode';
   universalLinkElement.addEventListener('click', () => {
     resolve({ away: true, linkElement: universalLinkElement });
   });
