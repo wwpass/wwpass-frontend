@@ -78,7 +78,7 @@ const qrCodeAuth = async (options, websocketPool) => {
       };
       websocketPool.watchTicket(ticket);
       // eslint-disable-next-line no-await-in-loop
-      const result = await QRCodeLogin(options.qrcode, wwpassURLoptions, ttl, options.qrcodeStyle);
+      const result = await QRCodeLogin(options.qrcode, wwpassURLoptions, ttl * 900, options.qrcodeStyle);
       if (!result.refresh) return result;
     } catch (err) {
       if (!err.status) {

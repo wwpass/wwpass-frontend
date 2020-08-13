@@ -154,6 +154,7 @@ const QRCodeLogin = (
   QRCodeElement.style.width = '90%';
 
   const qrCodeSwitchLink = document.createElement('a');
+  qrCodeSwitchLink.href = '#';
   qrCodeSwitchLink.style.background = '#FFFFFF';
   qrCodeSwitchLink.style.color = '#000F2C';
   qrCodeSwitchLink.style.textAlign = 'center';
@@ -172,14 +173,16 @@ const QRCodeLogin = (
   parentElement.appendChild(QRCodeElement);
   parentElement.appendChild(qrCodeSwitchLink);
   insertInnerSvg(svgDiv, qrcodesize, qrMargin);
-  setTimeout(() => {
-    debouncePageVisible(() => {
-      resolve({ refresh: true });
-    });
-  }, ttl * 900);
+  if (ttl) {
+    setTimeout(() => {
+      debouncePageVisible(() => {
+        resolve({ refresh: true });
+      });
+    }, ttl);
+  }
 });
 
-const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
+const sameDeviceLogin = (parentElement, wwpassURLoptions, ttl) => new Promise((resolve) => {
   const universalLinkElement = document.createElement('a');
   universalLinkElement.style.display = 'inline-block';
   universalLinkElement.style.textAlign = 'center';
@@ -187,6 +190,8 @@ const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
   universalLinkElement.href = '#';
   universalLinkElement.innerHTML = loginButtonSGV;
   const qrCodeSwitchLink = document.createElement('a');
+  if (wwpassURLoptions) qrCodeSwitchLink.href = getUniversalURL(wwpassURLoptions, false);
+  else qrCodeSwitchLink.href = '#';
   qrCodeSwitchLink.style.background = '#FFFFFF';
   qrCodeSwitchLink.style.color = '#000F2C';
   qrCodeSwitchLink.style.textAlign = 'center';
@@ -205,6 +210,13 @@ const sameDeviceLogin = (parentElement) => new Promise((resolve) => {
   removeLoader(parentElement);
   parentElement.appendChild(universalLinkElement);
   parentElement.appendChild(qrCodeSwitchLink);
+  if (ttl) {
+    setTimeout(() => {
+      debouncePageVisible(() => {
+        resolve({ refresh: true });
+      });
+    }, ttl);
+  }
 });
 
 const clearQRCode = (parentElement, style) => setLoader(parentElement, style);
