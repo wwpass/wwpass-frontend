@@ -186,11 +186,11 @@ const sameDeviceLogin = (parentElement, wwpassURLoptions, ttl) => new Promise((r
   universalLinkElement.style.display = 'inline-block';
   universalLinkElement.style.textAlign = 'center';
   universalLinkElement.style.width = '100%';
-  universalLinkElement.href = '#';
+  if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, false);
+  else universalLinkElement.href = '#';
   universalLinkElement.innerHTML = loginButtonSGV;
   const qrCodeSwitchLink = document.createElement('a');
-  if (wwpassURLoptions) qrCodeSwitchLink.href = getUniversalURL(wwpassURLoptions, false);
-  else qrCodeSwitchLink.href = '#';
+  qrCodeSwitchLink.href = '#';
   qrCodeSwitchLink.style.background = '#FFFFFF';
   qrCodeSwitchLink.style.color = '#000F2C';
   qrCodeSwitchLink.style.textAlign = 'center';
