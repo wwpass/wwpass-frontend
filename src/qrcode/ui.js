@@ -150,8 +150,7 @@ const QRCodeLogin = (
     QRCodeElement.style.max_width = `${qrcodeStyle.width}px`;
     QRCodeElement.style.max_height = `${qrcodeStyle.width}px`;
   }
-  QRCodeElement.style.height = '90%';
-  QRCodeElement.style.width = '90%';
+  QRCodeElement.style.width = '100%';
 
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.href = '#';
