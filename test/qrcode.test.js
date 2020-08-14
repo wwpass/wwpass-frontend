@@ -56,10 +56,7 @@ describe('renderQRcode', () => {
 
   test('should create element anchor with click listener', async () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
-    const loginPromise = sameDeviceLogin(document.getElementById('qrcode'), {
-      ticket: 'SP%20Name:sp:nonce@spfe.addr:1234',
-      callbackURL: 'https://callback.url'
-    },10);
+    const loginPromise = sameDeviceLogin(document.getElementById('qrcode'));
 
     const element = document.getElementById('qrcode').firstChild;
     expect(element.tagName).toEqual('A');
@@ -79,7 +76,7 @@ describe('renderQRcode', () => {
 
     const element = document.getElementById('qrcode').firstChild.nextSibling;
     expect(element.tagName).toEqual('A');
-    expect(element.href).toEqual('');
+    expect(element.href).toEqual('http://localhost/#');
     element.click();
     const res = await loginPromise;
     expect(res).toEqual({ qrcode: true });
@@ -107,7 +104,7 @@ describe('renderQRcode', () => {
 
     const element = document.getElementById('qrcode').firstChild.nextSibling;
     expect(element.tagName).toEqual('A');
-    expect(element.href).toEqual('');
+    expect(element.href).toEqual('http://localhost/#');
     element.click();
     const res = await loginPromise;
     expect(res).toEqual({ button: true });
