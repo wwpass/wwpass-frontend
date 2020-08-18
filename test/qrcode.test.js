@@ -58,7 +58,7 @@ describe('renderQRcode', () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
     const loginPromise = sameDeviceLogin(document.getElementById('qrcode'));
 
-    const element = document.getElementById('qrcode').firstChild;
+    const element = document.getElementById('qrcode').firstChild.firstChild;
     expect(element.tagName).toEqual('A');
     expect(element.href).toEqual('http://localhost/#');
     element.click();
@@ -74,7 +74,7 @@ describe('renderQRcode', () => {
       callbackURL: 'https://callback.url'
     },10);
 
-    const element = document.getElementById('qrcode').firstChild.nextSibling;
+    const element = document.getElementById('qrcode').firstChild.firstChild.nextSibling;
     expect(element.tagName).toEqual('A');
     expect(element.href).toEqual('http://localhost/#');
     element.click();
@@ -82,7 +82,7 @@ describe('renderQRcode', () => {
     expect(res).toEqual({ qrcode: true });
   });
 
-  test('should create element canvas (desktop)', () => {
+  test('should create element svg (desktop)', () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
     QRCodeLogin(document.getElementById('qrcode'),
     {
@@ -94,7 +94,7 @@ describe('renderQRcode', () => {
     expect(element.tagName).toEqual('DIV');
   });
 
-  test('should create element ancor for switching to button', async () => {
+  test('should create element anchor for switching to button', async () => {
     navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
     const loginPromise = QRCodeLogin(document.getElementById('qrcode'),
     {
@@ -134,7 +134,7 @@ describe('wwpassMobileAuth', () => {
     const switchElement = document.getElementById('qrcode').firstChild.nextSibling;
     switchElement.click();
     await new Promise(r => setTimeout(r, 10));
-    const buttonElement = document.getElementById('qrcode').firstChild;
+    const buttonElement = document.getElementById('qrcode').firstChild.firstChild;
     expect(buttonElement.tagName).toEqual('A');
     buttonElement.addEventListener('click', (e) => {e.preventDefault();});
     getClientNonceWrapper.mockImplementationOnce(() => Promise.resolve(b64ToAb("y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4=")));
@@ -171,7 +171,7 @@ describe('wwpassMobileAuth', () => {
     await new Promise(r => setTimeout(r, 10));
     expect(global.fetch).not.toBeCalled();
     global.fetch.mockClear()
-    const switchElement = document.getElementById('qrcode').firstChild.nextSibling;
+    const switchElement = document.getElementById('qrcode').firstChild.firstChild.nextSibling;
     switchElement.click();
     await new Promise(r => setTimeout(r, 10));
     const buttonElement = document.getElementById('qrcode').firstChild;
