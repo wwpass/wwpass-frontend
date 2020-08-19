@@ -20,11 +20,13 @@ const doWWPassPasskeyAuth = (options) => getTicket(options.ticketURL).then((json
    * to keep the original one to find nonce */
 });
 
+let haveEventListener = false;
 const initPasskeyButton = (options, resolve, reject) => {
   if (options.passkeyButton.innerHTML.length === 0) {
     options.passkeyButton.appendChild(renderPassKeyButton());
   }
   let authUnderway = false;
+  if (haveEventListener) return;
   options.passkeyButton.addEventListener('click', (e) => {
     if (!authUnderway) {
       authUnderway = true;
@@ -56,6 +58,7 @@ const initPasskeyButton = (options, resolve, reject) => {
     }
     e.preventDefault();
   }, false);
+  haveEventListener = true;
 };
 
 const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => {

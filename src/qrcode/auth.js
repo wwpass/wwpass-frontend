@@ -1,3 +1,4 @@
+import { wwpassPasskeyAuth } from '../passkey/auth';
 import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
@@ -37,6 +38,9 @@ const appAuth = async (initialOptions) => {
     log: () => {}
   };
   const options = { ...defaultOptions, ...initialOptions };
+  if (options.passkeyButton) {
+    options.passkeyButton.style.display = 'none';
+  }
   const result = await sameDeviceLogin(options.qrcode);
   if (result.away) {
     const json = await getTicket(options.ticketURL);
@@ -109,7 +113,7 @@ const qrCodeAuth = async (options, websocketPool) => {
 
 const qrCodeAuthWrapper = (options) => {
   const websocketPool = new WebSocketPool(options);
-  return Promise.race([
+  const promises = [
     websocketPool.promise.then((result) => {
       if (result.clientKey && options.catchClientKey) {
         options.catchClientKey(result.clientKey);
@@ -126,8 +130,11 @@ const qrCodeAuthWrapper = (options) => {
       if (err.status) return err;
       return { status: WWPASS_STATUS.INTERNAL_ERROR, reason: err };
     }),
-    qrCodeAuth(options, websocketPool)])
-  .finally(() => {
+    qrCodeAuth(options, websocketPool)];
+  if (options.passkeyButton) {
+    promises.push(wwpassPasskeyAuth(options));
+  }
+  return Promise.race(promises).finally(() => {
     websocketPool.close();
   });
 };
