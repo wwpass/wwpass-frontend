@@ -187,11 +187,15 @@ const wwpassMobileAuth = async (initialOptions) => {
   default:
     executor = isMobile() ? appAuth : qrCodeAuthWrapper;
   }
+  if (options.uiCallback) {
+    options.uiCallback(executor === appAuth ? { button: true } : { qrcode: true });
+  }
 
   // Continue until an exception is thrown or qrcode element is removed from DOM
   do {
     // eslint-disable-next-line no-await-in-loop
     const result = await executor(options);
+    if (options.uiCallback) options.uiCallback(result);
     if (result.button) {
       executor = appAuth;
     } else if (result.qrcode) {

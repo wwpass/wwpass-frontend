@@ -65,6 +65,11 @@ WWPass.authInit({
     - `wwp_status` and `wwp_reason`: always `200`, `"OK"` for successful authentications
  - `ppx`: *OPTIONAL* Alternative prefix for `callbackURL` parameters. Defaults to `wwp_`
  - `forcePasskeyButton`: *OPTIONAL* Always show a button for hardware PassKey authentication. If set to `true` (default for backward compatibility), the button will be always shown. If set to `false` (recommended), the button will only be shown if any means to communicate with a passKey is detected (WWPass Extention or NPAPI plugin)
+ - `uiCallback`: a callback function that will be called when UI-related events happen. Signle argument is the data about the event:
+    - `{ away: true }`: User clicked "Login with WWPass button"
+    - `{ refresh: true }`: A QR code is about to be refreshed
+    - `{ button: true }`: A "Login with WWPass button" is about to be shown
+    - `{ qrcode: true }`: A QR code is about to be shown
 
 ## Support
 
