@@ -1,4 +1,4 @@
-import { wwpassPasskeyAuth } from '../passkey/auth';
+import { onButtonClick } from '../passkey/auth';
 import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
@@ -14,6 +14,7 @@ import {
   QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
 } from './ui';
 import { getUniversalURL } from '../urls';
+import { pluginPresent } from '../passkey/passkey';
 
 const METHOD_KEY_NAME = 'wwpass.auth.method';
 const METHOD_QRCODE = 'qrcode';
@@ -38,9 +39,7 @@ const appAuth = async (initialOptions) => {
     log: () => {}
   };
   const options = { ...defaultOptions, ...initialOptions };
-  if (options.passkeyButton) {
-    options.passkeyButton.style.display = 'none';
-  }
+
   const result = await sameDeviceLogin(options.qrcode);
   if (result.away) {
     const json = await getTicket(options.ticketURL);
@@ -49,6 +48,9 @@ const appAuth = async (initialOptions) => {
     const { ttl } = response;
     const key = await getClientNonceWrapper(ticket, ttl);
     window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
+    if (pluginPresent) {
+      return onButtonClick(options);
+    }
     result.linkElement.href = getUniversalURL({
       ticket,
       callbackURL: options.callbackURL,
@@ -131,9 +133,6 @@ const qrCodeAuthWrapper = (options) => {
       return { status: WWPASS_STATUS.INTERNAL_ERROR, reason: err };
     }),
     qrCodeAuth(options, websocketPool)];
-  if (options.passkeyButton) {
-    promises.push(wwpassPasskeyAuth(options));
-  }
   return Promise.race(promises).finally(() => {
     websocketPool.close();
   });
@@ -176,6 +175,12 @@ const wwpassMobileAuth = async (initialOptions) => {
   if (!options.qrcode) {
     throw Error('Element not found');
   }
+
+  // Always hide the button for backward compatibility, this auth will be handled by appAuth
+  if (options.passkeyButton) {
+    options.passkeyButton.style.display = 'none';
+  }
+
   let executor;
   switch (window.localStorage.getItem(METHOD_KEY_NAME)) {
   case METHOD_QRCODE:
