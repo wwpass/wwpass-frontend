@@ -15,6 +15,8 @@ import {
 } from './ui';
 import { getUniversalURL } from '../urls';
 import { pluginPresent } from '../passkey/passkey';
+import { wwpassShowError } from '../passkey/ui';
+import downloadDialog from './download_dialog.html';
 
 const METHOD_KEY_NAME = 'wwpass.auth.method';
 const METHOD_QRCODE = 'qrcode';
@@ -24,11 +26,14 @@ const PROTOCOL_VERSION = 2;
 
 const WAIT_ON_ERROR = 500;
 
+const ERROR_DIALOG_TIMEOUT = 4000;
+
 function wait(ms) {
   if (ms) return new Promise((r) => setTimeout(r, ms));
   return null;
 }
 
+let popupTimerSet = false;
 const appAuth = async (initialOptions) => {
   const defaultOptions = {
     universal: false,
@@ -47,8 +52,8 @@ const appAuth = async (initialOptions) => {
     const { ticket } = response;
     const { ttl } = response;
     const key = await getClientNonceWrapper(ticket, ttl);
-    window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
-    if (pluginPresent) {
+    if (pluginPresent()) {
+      window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
       return onButtonClick(options);
     }
     result.linkElement.href = getUniversalURL({
@@ -59,6 +64,21 @@ const appAuth = async (initialOptions) => {
       version: PROTOCOL_VERSION
     });
     result.linkElement.click();
+    let showDownloadsPopup = true;
+    document.addEventListener('visibilitychange', (state) => {
+      if (state !== 'visible') showDownloadsPopup = false;
+    });
+    if (!popupTimerSet) {
+      popupTimerSet = true;
+      setTimeout(() => {
+        popupTimerSet = false;
+        if (showDownloadsPopup && document.visibilityState === 'visible') {
+          wwpassShowError(downloadDialog, 'Download WWPass<sup>TM</sup>&nbsp;Key&nbsp;app from', () => {});
+        } else {
+          window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
+        }
+      }, ERROR_DIALOG_TIMEOUT);
+    }
   }
   return result;
 };
@@ -205,10 +225,7 @@ const wwpassMobileAuth = async (initialOptions) => {
       executor = appAuth;
     } else if (result.qrcode) {
       executor = qrCodeAuthWrapper;
-    } else {
-      navigateToCallback(result);
-      return result;
-    }
+    } else if (!result.away) navigateToCallback(result);
   } while (document.documentElement.contains(options.qrcode));
   return {
     status: WWPASS_STATUS.TERMINAL_ERROR,

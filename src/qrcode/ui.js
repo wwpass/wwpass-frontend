@@ -266,11 +266,14 @@ const sameDeviceLogin = (parentElement, wwpassURLoptions, ttl) => new Promise((r
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.href = '#';
   qrCodeSwitchLink.className = 'wwpassQRButton';
-  universalLinkElement.addEventListener('click', () => {
+  universalLinkElement.addEventListener('click', (e) => {
+    if (!universalLinkElement.href.endsWith('#')) return;
     resolve({ away: true, linkElement: universalLinkElement });
+    e.preventDefault();
   });
-  qrCodeSwitchLink.addEventListener('click', () => {
+  qrCodeSwitchLink.addEventListener('click', (e) => {
     resolve({ qrcode: true });
+    e.preventDefault();
   });
   const buttonContainer = document.createElement('div');
   buttonContainer.appendChild(universalLinkElement);
