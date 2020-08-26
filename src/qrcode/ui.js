@@ -19,10 +19,15 @@ const setLoader = (element, styles) => {
   const loaderClass = `${styles.prefix || 'wwp_'}qrcode_loader`;
   const loader = document.createElement('div');
   loader.className = loaderClass;
-  loader.innerHTML = `<div class="${loaderClass}_blk"></div>
-  <div class="${loaderClass}_blk ${loaderClass}_delay"></div>
-  <div class="${loaderClass}_blk ${loaderClass}_delay"></div>
-  <div class="${loaderClass}_blk"></div>`;
+  loader.innerHTML = `
+  <div style="width: 256px; height: 256px; margin-inline-start: auto; margin-inline-end: auto;">
+    <div class="${loaderClass}">
+      <div class="${loaderClass}_blk"></div>
+      <div class="${loaderClass}_blk ${loaderClass}_delay"></div>
+      <div class="${loaderClass}_blk ${loaderClass}_delay"></div>
+      <div class="${loaderClass}_blk"></div>
+    </div>
+  </div>`;
   if (!haveStyleSheet) {
     const style = document.createElement('style');
     style.innerHTML = `@keyframes ${styles.prefix || 'wwp_'}pulse {
