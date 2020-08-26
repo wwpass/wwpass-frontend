@@ -225,7 +225,13 @@ const wwpassMobileAuth = async (initialOptions) => {
       executor = appAuth;
     } else if (result.qrcode) {
       executor = qrCodeAuthWrapper;
-    } else if (!result.away) navigateToCallback(result);
+    }
+    if (result.ticket) {
+      navigateToCallback(result);
+    }
+    if (!result.refresh) {
+      if (options.once || result.status === WWPASS_STATUS.TERMINAL_ERROR) return result;
+    }
   } while (document.documentElement.contains(options.qrcode));
   return {
     status: WWPASS_STATUS.TERMINAL_ERROR,
