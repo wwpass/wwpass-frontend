@@ -185,7 +185,7 @@ const QRCodeLogin = (
   }
 });
 
-const haveButtonStyleSheet = false;
+let haveButtonStyleSheet = false;
 const addButtonStyleSheet = () => {
   if (!haveButtonStyleSheet) {
     const style = document.createElement('style');
@@ -256,7 +256,7 @@ const addButtonStyleSheet = () => {
       opacity: .7;
     }`;
     document.getElementsByTagName('head')[0].appendChild(style);
-    haveStyleSheet = true;
+    haveButtonStyleSheet = true;
   }
 };
 
