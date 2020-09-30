@@ -54,7 +54,8 @@ const appAuth = async (initialOptions) => {
     const key = await getClientNonceWrapper(ticket, ttl);
     if (pluginPresent()) {
       window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
-      return onButtonClick(options);
+      onButtonClick(options).then(navigateToCallback, navigateToCallback);
+      return { refresh: true };
     }
     result.linkElement.href = getUniversalURL({
       ticket,

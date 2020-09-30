@@ -20,10 +20,17 @@ const doWWPassPasskeyAuth = (options) => getTicket(options.ticketURL).then((json
    * to keep the original one to find nonce */
 });
 
-let authUnderway = false;
+const PASSKEY_BUTTON_TIMEOUT = 1000;
+
+let recentlyClicked = false;
 const onButtonClick = (options) => {
-  if (authUnderway === false) {
-    authUnderway = new Promise((resolve, reject) => {
+  if (recentlyClicked === false) {
+    recentlyClicked = true;
+    let enableButtonTimer = setTimeout(() => {
+      recentlyClicked = false;
+      enableButtonTimer = false;
+    }, PASSKEY_BUTTON_TIMEOUT);
+    return new Promise((resolve, reject) => {
       doWWPassPasskeyAuth(options).then((newTicket) => {
         resolve({
           ppx: options.ppx,
@@ -47,11 +54,15 @@ const onButtonClick = (options) => {
           });
         }
       }).finally(() => {
-        authUnderway = false;
+        if (enableButtonTimer !== false) {
+          clearTimeout(enableButtonTimer);
+          enableButtonTimer = false;
+          recentlyClicked = false;
+        }
       });
     });
   }
-  return authUnderway;
+  return false;
 };
 
 let haveEventListener = false;
