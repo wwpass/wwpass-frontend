@@ -153,7 +153,21 @@ const QRCodeLogin = (
     QRCodeElement.style.max_width = `${qrcodeStyle.width}px`;
     QRCodeElement.style.max_height = `${qrcodeStyle.width}px`;
   }
+  QRCodeElement.style.position = 'relative';
   QRCodeElement.style.width = '100%';
+  let authElement = null;
+  if (isMobile()) {
+    const universalLinkElement = document.createElement('a');
+    if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, true);
+    else universalLinkElement.href = '#';
+    universalLinkElement.addEventListener('click', (e) => {
+      if (!universalLinkElement.href.endsWith('#')) return;
+      resolve({ away: true, linkElement: universalLinkElement });
+      e.preventDefault();
+    });
+    universalLinkElement.appendChild(QRCodeElement);
+    authElement = universalLinkElement;
+  } else authElement = QRCodeElement;
 
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.href = '#';
@@ -171,8 +185,7 @@ const QRCodeLogin = (
   });
 
   removeLoader(parentElement);
-  QRCodeElement.style.position = 'relative';
-  parentElement.appendChild(QRCodeElement);
+  parentElement.appendChild(authElement);
   parentElement.appendChild(qrCodeSwitchLink);
   insertInnerSvg(svgDiv, qrcodesize, qrMargin);
   if (ttl) {
@@ -265,7 +278,7 @@ const sameDeviceLogin = (parentElement, wwpassURLoptions, ttl) => new Promise((r
   const universalLinkElement = document.createElement('a');
   universalLinkElement.className = 'wwpassLoginButton';
   universalLinkElement.innerText = (wwpassURLoptions && wwpassURLoptions.buttonText) || 'Log in with WWPass';
-  if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, false);
+  if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, true);
   else universalLinkElement.href = '#';
   const qrCodeSwitchLink = document.createElement('a');
   qrCodeSwitchLink.href = '#';
