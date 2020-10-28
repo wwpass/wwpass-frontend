@@ -167,6 +167,7 @@ const QRCodeLogin = (
   qrCodeSwitchLink.style.textDecorationLine = 'underline';
   qrCodeSwitchLink.style.cursor = 'pointer';
   qrCodeSwitchLink.innerText = 'or use WWPass Key on this device';
+  qrCodeSwitchLink.id = 'wwp_switch_to_button';
   qrCodeSwitchLink.addEventListener('click', () => {
     resolve({ button: true });
   });
