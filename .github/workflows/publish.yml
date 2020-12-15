@@ -4,7 +4,7 @@ on:
     types: [created]
 jobs:
   build:
-    if: github.repository_owner == "wwpass"
+    if: github.repository_owner=='wwpass'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
