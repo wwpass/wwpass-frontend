@@ -15,25 +15,19 @@ import {
   QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
 } from './ui';
 import { getUniversalURL } from '../urls';
-import { wwpassShowError } from '../passkey/ui';
-import downloadDialog from './download_dialog.html';
 
 const METHOD_KEY_NAME = 'wwpass.auth.method';
 const METHOD_QRCODE = 'qrcode';
-const METHOD_SAME_DEVICE = 'appRedirect';
 
 const PROTOCOL_VERSION = 2;
 
 const WAIT_ON_ERROR = 500;
 
-const ERROR_DIALOG_TIMEOUT = 4000;
 
 function wait(ms) {
   if (ms) return new Promise((r) => setTimeout(r, ms));
   return null;
 }
-
-let popupTimerSet = false;
 
 const redirectToWWPassApp = async (options, authResult) => {
   const json = await getTicket(options.ticketURL);
@@ -50,21 +44,6 @@ const redirectToWWPassApp = async (options, authResult) => {
     version: PROTOCOL_VERSION
   });
   authResult.linkElement.click();
-  let showDownloadsPopup = true;
-  document.addEventListener('visibilitychange', (state) => {
-    if (state !== 'visible') showDownloadsPopup = false;
-  });
-  if (!popupTimerSet) {
-    popupTimerSet = true;
-    setTimeout(() => {
-      popupTimerSet = false;
-      if (showDownloadsPopup && document.visibilityState === 'visible') {
-        wwpassShowError(downloadDialog, 'Download WWPass<sup>TM</sup>&nbsp;Key&nbsp;app from', () => {});
-      } else {
-        window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
-      }
-    }, ERROR_DIALOG_TIMEOUT);
-  }
   return authResult;
 };
 
