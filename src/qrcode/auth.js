@@ -1,4 +1,4 @@
-import { wwpassPasskeyAuth, onButtonClick } from '../passkey/auth';
+import { wwpassPasskeyAuth } from '../passkey/auth';
 
 import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
@@ -15,7 +15,6 @@ import {
   QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
 } from './ui';
 import { getUniversalURL } from '../urls';
-import { pluginPresent } from '../passkey/passkey';
 import { wwpassShowError } from '../passkey/ui';
 import downloadDialog from './download_dialog.html';
 
@@ -42,11 +41,6 @@ const redirectToWWPassApp = async (options, authResult) => {
   const { ticket } = response;
   const { ttl } = response;
   const key = await getClientNonceWrapper(ticket, ttl);
-  if (pluginPresent()) {
-    window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
-    onButtonClick(options).then(navigateToCallback, navigateToCallback);
-    return { refresh: true };
-  }
   // eslint-disable-next-line no-param-reassign
   authResult.linkElement.href = getUniversalURL({
     ticket,
