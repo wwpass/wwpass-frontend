@@ -1,5 +1,5 @@
-import { wwpassPasskeyAuth } from '../passkey/auth';
-import { onButtonClick } from '../passkey/auth';
+import { wwpassPasskeyAuth, onButtonClick } from '../passkey/auth';
+
 import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
@@ -164,10 +164,10 @@ const qrCodeAuthWrapper = (options) => {
     }),
     qrCodeAuth(options, websocketPool)];
 
-    if (options.passkeyButton) {
-      promises.push(wwpassPasskeyAuth(options));
-    }
-  
+  if (options.passkeyButton) {
+    promises.push(wwpassPasskeyAuth(options));
+  }
+
   return Promise.race(promises).finally(() => {
     websocketPool.close();
   });
@@ -211,34 +211,11 @@ const wwpassMobileAuth = async (initialOptions) => {
     throw Error('Element not found');
   }
 
-  /*
-  // Always hide the button for backward compatibility, this auth will be handled by appAuth
-  if (options.passkeyButton) {
-    options.passkeyButton.style.display = 'none';
-  }
-
-  */
-
   let executor = qrCodeAuthWrapper;
 
-  if(isMobile() 
-    && (window.localStorage.getItem(METHOD_KEY_NAME) == METHOD_SAME_DEVICE)) {
-      executor = appAuth;
-    }
-
-
-  /*
-  switch (window.localStorage.getItem(METHOD_KEY_NAME)) {
-  case METHOD_QRCODE:
-    executor = qrCodeAuthWrapper;
-    break;
-  case METHOD_SAME_DEVICE:
+  if (isMobile()) {
     executor = appAuth;
-    break;
-  default:
-    executor = isMobile() ? appAuth : qrCodeAuthWrapper;
   }
-  */
 
   if (options.uiCallback) {
     options.uiCallback(executor === appAuth ? { button: true } : { qrcode: true });
