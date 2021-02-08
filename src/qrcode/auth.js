@@ -58,7 +58,7 @@ const appAuth = async (initialOptions) => {
   };
   const options = { ...defaultOptions, ...initialOptions };
 
-  const result = await sameDeviceLogin(options.qrcode);
+  const result = await sameDeviceLogin(options.qrcode, null, null, true);
   if (result.away) {
     return redirectToWWPassApp(options, result);
   }
@@ -90,7 +90,8 @@ const qrCodeAuth = async (options, websocketPool) => {
         options.qrcode,
         wwpassURLoptions,
         ttl * 900,
-        options.qrcodeStyle
+        options.qrcodeStyle,
+        (options.uiSwitch === 'auto' && isMobile()) || options.uiSwitch === 'always'
       );
       if (result.away) return redirectToWWPassApp(options, result);
       if (!result.refresh) return result;
@@ -152,6 +153,8 @@ const qrCodeAuthWrapper = (options) => {
 options = {
     'ticketURL': undefined, // string
     'callbackURL': undefined, // string
+    'uiType': 'auto', // 'auto' | 'button' | 'qrcode'
+    'uiSwitch': 'auto', // 'auto' | 'always' | 'never'
     'development': false, // work with dev server
     'log': function (message) || console.log, // another log handler
 }
@@ -160,6 +163,8 @@ const wwpassMobileAuth = async (initialOptions) => {
   const defaultOptions = {
     ticketURL: undefined,
     callbackURL: undefined,
+    uiType: 'auto',
+    uiSwitch: 'auto',
     version: 2,
     ppx: 'wwp_',
     spfewsAddress: 'wss://spfews.wwpass.com',
@@ -184,10 +189,18 @@ const wwpassMobileAuth = async (initialOptions) => {
     throw Error('Element not found');
   }
 
-  let executor = qrCodeAuthWrapper;
-
-  if (isMobile()) {
+  let executor = null;
+  switch (options.uiType) {
+  case 'button':
     executor = appAuth;
+    break;
+  case 'qrcode':
+    executor = qrCodeAuthWrapper;
+    break;
+  case 'auto':
+  default:
+    executor = isMobile() ? appAuth : qrCodeAuthWrapper;
+    break;
   }
 
   if (options.uiCallback) {

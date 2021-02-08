@@ -15,7 +15,6 @@ getClientNonceWrapper.mockImplementation(() => Promise.resolve(b64ToAb("y1HeSxud
 
 import { wwpassMobileAuth } from '../src/qrcode/auth';
 import { QRCodeLogin, sameDeviceLogin } from '../src/qrcode/ui';
-import { getUniversalURL } from '../src/urls';
 
 
 const UserAgent = {
@@ -95,13 +94,12 @@ describe('renderQRcode', () => {
   });
 
   test('should create element anchor for switching to button', async () => {
-    navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
+    navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
     const loginPromise = QRCodeLogin(document.getElementById('qrcode'),
     {
       ticket: 'SP%20Name:scp:nonce@spfe.addr:1234',
       callbackURL: 'https://callback.url'
-    },10);
-
+    },10, null, true);
     const element = document.getElementById('qrcode').firstChild.nextSibling;
     expect(element.tagName).toEqual('A');
     expect(element.href).toEqual('http://localhost/#');
@@ -123,7 +121,8 @@ describe('wwpassMobileAuth', () => {
       ppx: 'wwp_',
       spfewsAddress: 'wss://spfews.wwpass.com',
       qrcode: document.getElementById('qrcode'),
-      uiCallback: jest.fn()
+      uiCallback: jest.fn(),
+      uiSwitch: 'always'
     };
     navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
     const loginPromise = wwpassMobileAuth(options);

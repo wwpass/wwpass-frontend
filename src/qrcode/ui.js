@@ -139,7 +139,8 @@ const QRCodeLogin = (
   parentElement,
   wwpassURLoptions,
   ttl,
-  qrcodeStyle
+  qrcodeStyle,
+  showSwitch
 ) => new Promise((resolve) => {
   const QRCodeElement = document.createElement('div');
   const { svgTag, qrcodesize, qrMargin } = renderQR(
@@ -156,7 +157,7 @@ const QRCodeLogin = (
   QRCodeElement.style.position = 'relative';
   QRCodeElement.style.width = '100%';
   let authElement = null;
-  if (isMobile()) {
+  if (showSwitch) {
     const universalLinkElement = document.createElement('a');
     if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, true);
     else universalLinkElement.href = '#';
@@ -187,7 +188,7 @@ const QRCodeLogin = (
 
   removeLoader(parentElement);
   parentElement.appendChild(authElement);
-  if (isMobile()) {
+  if (showSwitch) {
     parentElement.appendChild(qrCodeSwitchLink);
   }
   insertInnerSvg(svgDiv, qrcodesize, qrMargin);
@@ -282,7 +283,12 @@ const addButtonStyleSheet = () => {
 };
 
 
-const sameDeviceLogin = (parentElement, wwpassURLoptions, ttl) => new Promise((resolve) => {
+const sameDeviceLogin = (
+  parentElement,
+  wwpassURLoptions,
+  ttl,
+  showSwitch = true
+) => new Promise((resolve) => {
   addButtonStyleSheet();
   const universalLinkElement = document.createElement('a');
   universalLinkElement.className = 'wwpassLoginButton';
@@ -291,22 +297,26 @@ const sameDeviceLogin = (parentElement, wwpassURLoptions, ttl) => new Promise((r
   if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, true);
   else universalLinkElement.href = '#';
   const qrCodeSwitchLink = document.createElement('a');
-  qrCodeSwitchLink.href = '#';
-  qrCodeSwitchLink.className = 'wwpassQRButton';
-  qrCodeSwitchLink.classList.add('wwpass-frontend-custom');
-  qrCodeSwitchLink.innerText = 'Show QR code';
-  universalLinkElement.addEventListener('click', (e) => {
-    if (!universalLinkElement.href.endsWith('#')) return;
-    resolve({ away: true, linkElement: universalLinkElement });
-    e.preventDefault();
-  });
-  qrCodeSwitchLink.addEventListener('click', (e) => {
-    resolve({ qrcode: true });
-    e.preventDefault();
-  });
+  if (showSwitch) {
+    qrCodeSwitchLink.href = '#';
+    qrCodeSwitchLink.className = 'wwpassQRButton';
+    qrCodeSwitchLink.classList.add('wwpass-frontend-custom');
+    qrCodeSwitchLink.innerText = 'Show QR code';
+    universalLinkElement.addEventListener('click', (e) => {
+      if (!universalLinkElement.href.endsWith('#')) return;
+      resolve({ away: true, linkElement: universalLinkElement });
+      e.preventDefault();
+    });
+    qrCodeSwitchLink.addEventListener('click', (e) => {
+      resolve({ qrcode: true });
+      e.preventDefault();
+    });
+  }
   const buttonContainer = document.createElement('div');
   buttonContainer.appendChild(universalLinkElement);
-  buttonContainer.appendChild(qrCodeSwitchLink);
+  if (showSwitch) {
+    buttonContainer.appendChild(qrCodeSwitchLink);
+  }
   buttonContainer.className = 'wwpassButtonContainer';
   removeLoader(parentElement);
   parentElement.appendChild(buttonContainer);
