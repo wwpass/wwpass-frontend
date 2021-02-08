@@ -72,7 +72,7 @@ const initPasskeyButton = (options, resolve) => {
   }
   if (haveEventListener) return;
   options.passkeyButton.addEventListener('click', (e) => {
-    resolve(onButtonClick());
+    resolve(onButtonClick(options));
     e.preventDefault();
   }, false);
   haveEventListener = true;
