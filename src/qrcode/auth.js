@@ -1,4 +1,5 @@
-import { wwpassPasskeyAuth } from '../passkey/auth';
+import { wwpassPasskeyAuth, onButtonClick } from '../passkey/auth';
+
 import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
@@ -14,6 +15,9 @@ import {
   QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
 } from './ui';
 import { getUniversalURL } from '../urls';
+import { pluginPresent } from '../passkey/passkey';
+import { wwpassShowError } from '../passkey/ui';
+import downloadDialog from './download_dialog.html';
 
 const METHOD_KEY_NAME = 'wwpass.auth.method';
 const METHOD_QRCODE = 'qrcode';
@@ -23,10 +27,52 @@ const PROTOCOL_VERSION = 2;
 
 const WAIT_ON_ERROR = 500;
 
+const ERROR_DIALOG_TIMEOUT = 4000;
+
 function wait(ms) {
   if (ms) return new Promise((r) => setTimeout(r, ms));
   return null;
 }
+
+let popupTimerSet = false;
+
+const redirectToWWPassApp = async (options, authResult) => {
+  const json = await getTicket(options.ticketURL);
+  const response = ticketAdapter(json);
+  const { ticket } = response;
+  const { ttl } = response;
+  const key = await getClientNonceWrapper(ticket, ttl);
+  if (pluginPresent()) {
+    window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
+    onButtonClick(options).then(navigateToCallback, navigateToCallback);
+    return { refresh: true };
+  }
+  // eslint-disable-next-line no-param-reassign
+  authResult.linkElement.href = getUniversalURL({
+    ticket,
+    callbackURL: options.callbackURL,
+    clientKey: key ? encodeClientKey(key) : undefined,
+    ppx: options.ppx,
+    version: PROTOCOL_VERSION
+  });
+  authResult.linkElement.click();
+  let showDownloadsPopup = true;
+  document.addEventListener('visibilitychange', (state) => {
+    if (state !== 'visible') showDownloadsPopup = false;
+  });
+  if (!popupTimerSet) {
+    popupTimerSet = true;
+    setTimeout(() => {
+      popupTimerSet = false;
+      if (showDownloadsPopup && document.visibilityState === 'visible') {
+        wwpassShowError(downloadDialog, 'Download WWPass<sup>TM</sup>&nbsp;Key&nbsp;app from', () => {});
+      } else {
+        window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
+      }
+    }, ERROR_DIALOG_TIMEOUT);
+  }
+  return authResult;
+};
 
 const appAuth = async (initialOptions) => {
   const defaultOptions = {
@@ -38,25 +84,10 @@ const appAuth = async (initialOptions) => {
     log: () => {}
   };
   const options = { ...defaultOptions, ...initialOptions };
-  if (options.passkeyButton) {
-    options.passkeyButton.style.display = 'none';
-  }
+
   const result = await sameDeviceLogin(options.qrcode);
   if (result.away) {
-    const json = await getTicket(options.ticketURL);
-    const response = ticketAdapter(json);
-    const { ticket } = response;
-    const { ttl } = response;
-    const key = await getClientNonceWrapper(ticket, ttl);
-    window.localStorage.setItem(METHOD_KEY_NAME, METHOD_SAME_DEVICE);
-    result.linkElement.href = getUniversalURL({
-      ticket,
-      callbackURL: options.callbackURL,
-      clientKey: key ? encodeClientKey(key) : undefined,
-      ppx: options.ppx,
-      version: PROTOCOL_VERSION
-    });
-    result.linkElement.click();
+    return redirectToWWPassApp(options, result);
   }
   return result;
 };
@@ -88,6 +119,7 @@ const qrCodeAuth = async (options, websocketPool) => {
         ttl * 900,
         options.qrcodeStyle
       );
+      if (result.away) return redirectToWWPassApp(options, result);
       if (!result.refresh) return result;
     } catch (err) {
       if (!err.status) {
@@ -131,9 +163,11 @@ const qrCodeAuthWrapper = (options) => {
       return { status: WWPASS_STATUS.INTERNAL_ERROR, reason: err };
     }),
     qrCodeAuth(options, websocketPool)];
+
   if (options.passkeyButton) {
     promises.push(wwpassPasskeyAuth(options));
   }
+
   return Promise.race(promises).finally(() => {
     websocketPool.close();
   });
@@ -176,17 +210,13 @@ const wwpassMobileAuth = async (initialOptions) => {
   if (!options.qrcode) {
     throw Error('Element not found');
   }
-  let executor;
-  switch (window.localStorage.getItem(METHOD_KEY_NAME)) {
-  case METHOD_QRCODE:
-    executor = qrCodeAuthWrapper;
-    break;
-  case METHOD_SAME_DEVICE:
+
+  let executor = qrCodeAuthWrapper;
+
+  if (isMobile()) {
     executor = appAuth;
-    break;
-  default:
-    executor = isMobile() ? appAuth : qrCodeAuthWrapper;
   }
+
   if (options.uiCallback) {
     options.uiCallback(executor === appAuth ? { button: true } : { qrcode: true });
   }
@@ -200,9 +230,12 @@ const wwpassMobileAuth = async (initialOptions) => {
       executor = appAuth;
     } else if (result.qrcode) {
       executor = qrCodeAuthWrapper;
-    } else {
+    }
+    if (result.ticket) {
       navigateToCallback(result);
-      return result;
+    }
+    if (!result.refresh) {
+      if (options.once || result.status === WWPASS_STATUS.TERMINAL_ERROR) return result;
     }
   } while (document.documentElement.contains(options.qrcode));
   return {
