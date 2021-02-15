@@ -13,18 +13,17 @@ let fetchReply = {
 
 jest.mock('../src/qrcode/wwpass.websocket');
 
-import { getWebSocketResult } from '../src/qrcode/wwpass.websocket';
+import WebSocketPool from '../src/qrcode/wwpass.websocket';
+jest.mock('../src/qrcode/wwpass.websocket');
 
 let wsOriginalTicket = null;
 
 beforeAll(() => {
-  getWebSocketResult.mockImplementation(() =>
-        Promise.resolve({
+  WebSocketPool.prototype.promise = Promise.resolve({
           clientKey: b64ToAb('7KHzhb6uH8LDNFgQkkUn1r7foj5e1TpeJEEArZnzLqc='),
           originalTicket: wsOriginalTicket,
           ttl: 300
-        })
-    );
+        });
 });
 
 global.fetch = jest.fn().mockImplementation(() => Promise.resolve(

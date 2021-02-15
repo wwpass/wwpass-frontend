@@ -1,4 +1,6 @@
-import { getWebSocketResult, closeConnectionPool } from './wwpass.websocket';
+import { wwpassPasskeyAuth } from '../passkey/auth';
+
+import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
 import { encodeClientKey } from '../crypto';
@@ -9,123 +11,160 @@ import { getClientNonceWrapper } from '../nonce';
 
 import { WWPASS_STATUS } from '../passkey/constants';
 
-import { QRCodePromise, clearQRCode, setRefersh } from './ui';
+import {
+  QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
+} from './ui';
+import { getUniversalURL } from '../urls';
 
-// todo: return style when qrcode updating
-// const DEFAULT_WAIT_CLASS = 'focused';
-// style.transition = 'all .4s ease-out';
-// style.opacity = '.3';
+const METHOD_KEY_NAME = 'wwpass.auth.method';
+const METHOD_QRCODE = 'qrcode';
 
 const PROTOCOL_VERSION = 2;
 
-const WAIT_ON_CLICK = 2000;
 const WAIT_ON_ERROR = 500;
+
 
 function wait(ms) {
   if (ms) return new Promise((r) => setTimeout(r, ms));
   return null;
 }
 
-const tryQRCodeAuth = async (options) => {
-  const { log } = options;
-  try {
-    log(options);
-    clearQRCode(options.qrcode, options.qrcodeStyle);
-    const json = await getTicket(options.ticketURL);
-    const response = ticketAdapter(json);
-    const { ticket } = response;
-    const { ttl } = response;
-    const key = await getClientNonceWrapper(ticket, ttl);
-    const wwpassURLoptions = {
-      universal: options.universal,
-      ticket,
-      callbackURL: options.callbackURL,
-      ppx: options.ppx,
-      version: PROTOCOL_VERSION,
-      clientKey: key ? encodeClientKey(key) : undefined
-    };
-    const result = await Promise.race([
-      QRCodePromise(options.qrcode, wwpassURLoptions, ttl, options.qrcodeStyle),
-      getWebSocketResult({
-        callbackURL: options.callbackURL,
-        ticket,
-        log,
-        development: options.development,
-        version: options.version,
-        ppx: options.ppx,
-        spfewsAddress: options.spfewsAddress,
-        returnErrors: options.returnErrors
-      })
-    ]);
-    clearQRCode(options.qrcode, options.qrcodeStyle);
-    if (result.refresh) {
-      return {
-        status: WWPASS_STATUS.CONTINUE,
-        reason: 'Need to refresh QRCode'
-      };
-    }
-    if (result.clientKey && options.catchClientKey) {
-      options.catchClientKey(result.clientKey);
-    }
-    if (result.away) {
-      closeConnectionPool();
-      return {
-        status: WWPASS_STATUS.OK,
-        reason: 'User clicked on QRCode'
-      };
-    }
-    return result;
-  } catch (err) {
-    if (!err.status) {
-      log('QRCode auth error', err);
-      await setRefersh(options.qrcode, err);
-      clearQRCode(options.qrcode, options.qrcodeStyle);
-      return {
-        status: WWPASS_STATUS.NETWORK_ERROR,
-        reason: err
-      };
-    }
-    clearQRCode(options.qrcode, options.qrcodeStyle);
-    if (err.status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
-      navigateToCallback(err);
-      return err;
-    }
-    if (err.status === WWPASS_STATUS.TICKET_TIMEOUT) {
-      log('ticket timed out');
-    }
-    return err;
-  }
+const redirectToWWPassApp = async (options, authResult) => {
+  const json = await getTicket(options.ticketURL);
+  const response = ticketAdapter(json);
+  const { ticket } = response;
+  const { ttl } = response;
+  const key = await getClientNonceWrapper(ticket, ttl);
+  // eslint-disable-next-line no-param-reassign
+  authResult.linkElement.href = getUniversalURL({
+    ticket,
+    callbackURL: options.callbackURL,
+    clientKey: key ? encodeClientKey(key) : undefined,
+    ppx: options.ppx,
+    version: PROTOCOL_VERSION
+  });
+  authResult.linkElement.click();
+  return authResult;
 };
 
-const getDelay = (status) => {
-  switch (status) {
-  case WWPASS_STATUS.OK:
-    return WAIT_ON_CLICK;
-  case WWPASS_STATUS.CONTINUE:
-    return 0;
-  default:
-    return WAIT_ON_ERROR;
-  }
-};
-
-
-/*
- * WWPass QR code auth function
- *
-options = {
-    'ticketURL': undefined, // string
-    'callbackURL': undefined, // string
-    'development': false, // work with dev server
-    'log': function (message) || console.log, // another log handler
-}
- */
-const wwpassQRCodeAuth = async (initialOptions) => {
+const appAuth = async (initialOptions) => {
   const defaultOptions = {
     universal: false,
     ticketURL: undefined,
     callbackURL: undefined,
-    development: false,
-    once: false, // Repeat authentication while possible
+    version: 2,
+    ppx: 'wwp_',
+    log: () => {}
+  };
+  const options = { ...defaultOptions, ...initialOptions };
+
+  const result = await sameDeviceLogin(options.qrcode, null, null, true);
+  if (result.away) {
+    return redirectToWWPassApp(options, result);
+  }
+  return result;
+};
+
+const qrCodeAuth = async (options, websocketPool) => {
+  // Continue until an exception is thrown or qrcode element is removed from DOM
+  do {
+    try {
+      clearQRCode(options.qrcode, options.qrcodeStyle);
+      // eslint-disable-next-line no-await-in-loop
+      const json = await getTicket(options.ticketURL);
+      const response = ticketAdapter(json);
+      const { ticket } = response;
+      const { ttl } = response;
+      // eslint-disable-next-line no-await-in-loop
+      const key = await getClientNonceWrapper(ticket, ttl);
+      const wwpassURLoptions = {
+        ticket,
+        callbackURL: options.callbackURL,
+        ppx: options.ppx,
+        version: PROTOCOL_VERSION,
+        clientKey: key ? encodeClientKey(key) : undefined
+      };
+      websocketPool.watchTicket(ticket);
+      // eslint-disable-next-line no-await-in-loop
+      const result = await QRCodeLogin(
+        options.qrcode,
+        wwpassURLoptions,
+        ttl * 900,
+        options.qrcodeStyle,
+        (options.uiSwitch === 'auto' && isMobile()) || options.uiSwitch === 'always'
+      );
+      if (result.away) return redirectToWWPassApp(options, result);
+      if (!result.refresh) return result;
+    } catch (err) {
+      if (!err.status) {
+        options.log('QRCode auth error', err);
+        // eslint-disable-next-line no-await-in-loop
+        await setRefersh(options.qrcode, err);
+        clearQRCode(options.qrcode, options.qrcodeStyle);
+      } else {
+        clearQRCode(options.qrcode, options.qrcodeStyle);
+        if (err.status === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
+          return err;
+        }
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await wait(WAIT_ON_ERROR);
+    }
+  } while (document.documentElement.contains(options.qrcode));
+  return {
+    status: WWPASS_STATUS.TERMINAL_ERROR,
+    reason: 'QRCode element is not in DOM'
+  };
+};
+
+const qrCodeAuthWrapper = (options) => {
+  const websocketPool = new WebSocketPool(options);
+  const promises = [
+    websocketPool.promise.then((result) => {
+      if (result.clientKey && options.catchClientKey) {
+        options.catchClientKey(result.clientKey);
+      }
+      window.localStorage.setItem(METHOD_KEY_NAME, METHOD_QRCODE);
+      return ({
+        ticket: result.ticket,
+        callbackURL: options.callbackURL,
+        ppx: options.ppx,
+        version: PROTOCOL_VERSION
+      });
+    }).catch((err) => {
+      options.log(err);
+      if (err.status) return err;
+      return { status: WWPASS_STATUS.INTERNAL_ERROR, reason: err };
+    }),
+    qrCodeAuth(options, websocketPool)];
+
+  if (options.passkeyButton) {
+    promises.push(wwpassPasskeyAuth(options));
+  }
+
+  return Promise.race(promises).finally(() => {
+    websocketPool.close();
+  });
+};
+
+/*
+ * WWPass auth with mobile PassKey
+ *
+options = {
+    'ticketURL': undefined, // string
+    'callbackURL': undefined, // string
+    'uiType': 'auto', // 'auto' | 'button' | 'qrcode'
+    'uiSwitch': 'auto', // 'auto' | 'always' | 'never'
+    'development': false, // work with dev server
+    'log': function (message) || console.log, // another log handler
+}
+ */
+const wwpassMobileAuth = async (initialOptions) => {
+  const defaultOptions = {
+    ticketURL: undefined,
+    callbackURL: undefined,
+    uiType: 'auto',
+    uiSwitch: 'auto',
     version: 2,
     ppx: 'wwp_',
     spfewsAddress: 'wss://spfews.wwpass.com',
@@ -135,10 +174,8 @@ const wwpassQRCodeAuth = async (initialOptions) => {
     },
     log: () => {}
   };
-
   const options = { ...defaultOptions, ...initialOptions };
   options.qrcodeStyle = { ...defaultOptions.qrcodeStyle, ...initialOptions.qrcodeStyle };
-
 
   if (!options.ticketURL) {
     throw Error('ticketURL not found');
@@ -151,13 +188,41 @@ const wwpassQRCodeAuth = async (initialOptions) => {
   if (!options.qrcode) {
     throw Error('Element not found');
   }
+
+  let executor = null;
+  switch (options.uiType) {
+  case 'button':
+    executor = appAuth;
+    break;
+  case 'qrcode':
+    executor = qrCodeAuthWrapper;
+    break;
+  case 'auto':
+  default:
+    executor = isMobile() ? appAuth : qrCodeAuthWrapper;
+    break;
+  }
+
+  if (options.uiCallback) {
+    options.uiCallback(executor === appAuth ? { button: true } : { qrcode: true });
+  }
+
   // Continue until an exception is thrown or qrcode element is removed from DOM
   do {
     // eslint-disable-next-line no-await-in-loop
-    const result = await tryQRCodeAuth(options);
-    if (options.once && result.status !== WWPASS_STATUS.CONTINUE) return result;
-    // eslint-disable-next-line no-await-in-loop
-    await wait(getDelay(result.status));
+    const result = await executor(options);
+    if (options.uiCallback) options.uiCallback(result);
+    if (result.button) {
+      executor = appAuth;
+    } else if (result.qrcode) {
+      executor = qrCodeAuthWrapper;
+    }
+    if (result.ticket) {
+      navigateToCallback(result);
+    }
+    if (!result.refresh) {
+      if (options.once || result.status === WWPASS_STATUS.TERMINAL_ERROR) return result;
+    }
   } while (document.documentElement.contains(options.qrcode));
   return {
     status: WWPASS_STATUS.TERMINAL_ERROR,
@@ -167,5 +232,5 @@ const wwpassQRCodeAuth = async (initialOptions) => {
 
 export {
   getTicket,
-  wwpassQRCodeAuth
+  wwpassMobileAuth
 };

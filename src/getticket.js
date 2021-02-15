@@ -1,4 +1,4 @@
-import { getWebSocketResult } from './qrcode/wwpass.websocket';
+import WebSocketPool from './qrcode/wwpass.websocket';
 import { getClientNonce } from './nonce';
 import { isClientKeyTicket } from './ticket';
 
@@ -34,10 +34,11 @@ const updateTicket = (url) => fetch(url, { cache: 'no-store', headers: noCacheHe
   if (!isClientKeyTicket(response.newTicket)) {
     return result;
   }
+  const websocketPool = new WebSocketPool({ clientKeyOnly: true });
+  websocketPool.watchTicket(response.newTicket);
   // We have to call getWebSocketResult and getClientNonce to check for Nonce and update
   // TTL on original ticket
-  return getWebSocketResult({ ticket: response.newTicket, clientKeyOnly: true })
-  .then((wsResult) => {
+  return websocketPool.promise.then((wsResult) => {
     if (!wsResult.clientKey) {
       throw Error(`No client key associated with the ticket ${response.newTicket}`);
     }
