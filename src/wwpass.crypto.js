@@ -1,4 +1,4 @@
-import { getWebSocketResult } from './qrcode/wwpass.websocket';
+import WebSocketPool from './qrcode/wwpass.websocket';
 import {
   ab2str, str2ab, abToB64, b64ToAb
 } from './ab';
@@ -24,8 +24,9 @@ class WWPassCryptoPromise {
       name: algorithmName,
       length: 256
     };
-    return getWebSocketResult({ ticket, clientKeyOnly: true })
-    .then((result) => {
+    const websocketPool = new WebSocketPool({ clientKeyOnly: true });
+    websocketPool.watchTicket(ticket);
+    return websocketPool.promise.then((result) => {
       if (!result.clientKey) {
         throw Error(`No client key associated with the ticket ${ticket}`);
       }

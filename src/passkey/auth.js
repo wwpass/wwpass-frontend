@@ -20,16 +20,18 @@ const doWWPassPasskeyAuth = (options) => getTicket(options.ticketURL).then((json
    * to keep the original one to find nonce */
 });
 
-const initPasskeyButton = (options, resolve, reject) => {
-  if (options.passkeyButton.innerHTML.length === 0) {
-    options.passkeyButton.appendChild(renderPassKeyButton());
-  }
-  let authUnderway = false;
-  options.passkeyButton.addEventListener('click', (e) => {
-    if (!authUnderway) {
-      authUnderway = true;
+const PASSKEY_BUTTON_TIMEOUT = 1000;
+
+let recentlyClicked = false;
+const onButtonClick = (options) => {
+  if (recentlyClicked === false) {
+    recentlyClicked = true;
+    let enableButtonTimer = setTimeout(() => {
+      recentlyClicked = false;
+      enableButtonTimer = false;
+    }, PASSKEY_BUTTON_TIMEOUT);
+    return new Promise((resolve, reject) => {
       doWWPassPasskeyAuth(options).then((newTicket) => {
-        authUnderway = false;
         resolve({
           ppx: options.ppx,
           version: options.version,
@@ -39,8 +41,7 @@ const initPasskeyButton = (options, resolve, reject) => {
           callbackURL: options.callbackURL,
           hw: true
         });
-      }, (err) => {
-        authUnderway = false;
+      }).catch((err) => {
         if (!err.code) {
           options.log('passKey error', err);
         } else if (err.code === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
@@ -52,10 +53,29 @@ const initPasskeyButton = (options, resolve, reject) => {
             callbackURL: options.callbackURL
           });
         }
+      }).finally(() => {
+        if (enableButtonTimer !== false) {
+          clearTimeout(enableButtonTimer);
+          enableButtonTimer = false;
+          recentlyClicked = false;
+        }
       });
-    }
+    });
+  }
+  return false;
+};
+
+let haveEventListener = false;
+const initPasskeyButton = (options, resolve) => {
+  if (options.passkeyButton.innerHTML.length === 0) {
+    options.passkeyButton.appendChild(renderPassKeyButton());
+  }
+  if (haveEventListener) return;
+  options.passkeyButton.addEventListener('click', (e) => {
+    resolve(onButtonClick(options));
     e.preventDefault();
   }, false);
+  haveEventListener = true;
 };
 
 const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => {
@@ -80,7 +100,7 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
     if (options.passkeyButton.style.display === 'none') {
       options.passkeyButton.style.display = null;
     }
-    initPasskeyButton(options, resolve, reject);
+    initPasskeyButton(options, resolve);
   } else {
     const displayBackup = options.passkeyButton.style.display;
     options.passkeyButton.style.display = 'none';
@@ -88,7 +108,7 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
       if (pluginPresent()) {
         _observer.disconnect();
         options.passkeyButton.style.display = displayBackup === 'none' ? null : displayBackup;
-        initPasskeyButton(options, resolve, reject);
+        initPasskeyButton(options, resolve);
       }
     });
     observer.observe(document.head, {
@@ -99,5 +119,6 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
 
 export {
   wwpassPasskeyAuth,
-  waitForRemoval
+  waitForRemoval,
+  onButtonClick
 };
