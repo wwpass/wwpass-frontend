@@ -1,19 +1,25 @@
 import './crypto.mock'
 
 import {getClientNonce} from '../src/nonce';
-import {getWebSocketResult} from '../src/qrcode/wwpass.websocket';
 import {WWPassCrypto, WWPassCryptoPromise} from '../src/wwpass.crypto';
 
-jest.mock(
-    '../src/qrcode/wwpass.websocket', () => ({getWebSocketResult: jest.fn()}));
 jest.mock('../src/nonce', () => ({getClientNonce: jest.fn()}));
+jest.mock('../src/qrcode/wwpass.websocket', () => {
+  return jest.fn().mockImplementation(() => {
+    const th = {
+      watchTicket: (t) => {
+        th.promise = (t === 'mockTicket' ? Promise.resolve({
+          clientKey: 'lbUqjnufubYo3pxhLhPGLWeg775T6oLbVE3ZHIxSME8pV5dtDvjF6nW3a8Kl+HV+'
+        }) : Promise.reject({
+          status: 421,
+          reason: 'Invalid ticket'
+        }))
+      }
+    };
+    return th;
+  });
+});
 
-getWebSocketResult.mockImplementation((opts) => opts.ticket == 'mockTicket' ? Promise.resolve({
-  clientKey: 'lbUqjnufubYo3pxhLhPGLWeg775T6oLbVE3ZHIxSME8pV5dtDvjF6nW3a8Kl+HV+'
-}) : Promise.reject({
-  status: 421,
-  reason: 'Invalid ticket'
-}));
 getClientNonce.mockImplementation(
     () => Promise.resolve(
         new Uint8Array([
