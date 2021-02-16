@@ -216,7 +216,7 @@ const addButtonStyleSheet = () => {
       }
 
       .wwpassButtonContainer {
-        min-width: 270px;
+        min-width: 210px;
         /* margin: 20px 10px;
         display: flex; */
         justify-content: center;
@@ -256,7 +256,7 @@ const addButtonStyleSheet = () => {
 
       background-color: #000F2C;
       background-image: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 17V25H18" stroke="white" stroke-width="2"/><rect x="3" y="22" width="7" height="7" stroke="white" stroke-width="2"/><rect x="3" y="3" width="7" height="7" stroke="white" stroke-width="2"/><rect x="22" y="3" width="7" height="7" stroke="white" stroke-width="2"/><path d="M19 7H14V14H10V18H2" stroke="white" stroke-width="2"/><path d="M2 14H7" stroke="white" stroke-width="2"/><path d="M29 17V25H25V18H18V10" stroke="white" stroke-width="2"/><path d="M13 3H19" stroke="white" stroke-width="2"/><path d="M13 29H18" stroke="white" stroke-width="2"/><path d="M24 29H30" stroke="white" stroke-width="2"/><path d="M21 14H30" stroke="white" stroke-width="2"/><path d="M21 30V22H17" stroke="white" stroke-width="2"/></svg>');
-      background-position: 244px;
+      background-position: right 8px top 8px;
       background-repeat: no-repeat;
 
       font-size: 18px;
