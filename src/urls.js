@@ -17,15 +17,16 @@ const getCallbackURL = (initialOptions = {}) => {
   }
 
   const firstDelimiter = (url.indexOf('?') === -1) ? '?' : '&';
-
-  url += `${firstDelimiter + encodeURIComponent(options.ppx)}version=${options.version}`;
-  url += `&${encodeURIComponent(options.ppx)}ticket=${encodeURIComponent(options.ticket)}`;
-  url += `&${encodeURIComponent(options.ppx)}status=${encodeURIComponent(options.status)}`;
-  url += `&${encodeURIComponent(options.ppx)}reason=${encodeURIComponent(options.reason)}`;
+  url += firstDelimiter;
+  const callbackParameters = ['version', 'ticket', 'status', 'reason'];
   if (options.hw) {
-    url += `&${encodeURIComponent(options.ppx)}hw=1`;
+    callbackParameters.push('hw');
+    options.hw = 1;
   }
 
+  callbackParameters.forEach((name, index) => {
+    url += `${encodeURIComponent(options.ppx)}${name}=${encodeURIComponent(options[name])}${index === callbackParameters.length - 1 ? '' : '&'}`;
+  });
   return url;
 };
 
