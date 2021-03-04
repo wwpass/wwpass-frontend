@@ -159,8 +159,7 @@ const QRCodeLogin = (
   let authElement = null;
   if (showSwitch) {
     const universalLinkElement = document.createElement('a');
-    if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, true);
-    else universalLinkElement.href = '#';
+    universalLinkElement.href = '#';
     universalLinkElement.addEventListener('click', (e) => {
       if (!universalLinkElement.href.endsWith('#')) return;
       resolve({ away: true, linkElement: universalLinkElement });
