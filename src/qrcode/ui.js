@@ -159,8 +159,7 @@ const QRCodeLogin = (
   let authElement = null;
   if (showSwitch) {
     const universalLinkElement = document.createElement('a');
-    if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, true);
-    else universalLinkElement.href = '#';
+    universalLinkElement.href = '#';
     universalLinkElement.addEventListener('click', (e) => {
       if (!universalLinkElement.href.endsWith('#')) return;
       resolve({ away: true, linkElement: universalLinkElement });
@@ -302,16 +301,16 @@ const sameDeviceLogin = (
     qrCodeSwitchLink.className = 'wwpassQRButton';
     qrCodeSwitchLink.classList.add('wwpass-frontend-custom');
     qrCodeSwitchLink.innerText = 'Show QR code';
-    universalLinkElement.addEventListener('click', (e) => {
-      if (!universalLinkElement.href.endsWith('#')) return;
-      resolve({ away: true, linkElement: universalLinkElement });
-      e.preventDefault();
-    });
     qrCodeSwitchLink.addEventListener('click', (e) => {
       resolve({ qrcode: true });
       e.preventDefault();
     });
   }
+  universalLinkElement.addEventListener('click', (e) => {
+    if (!universalLinkElement.href.endsWith('#')) return;
+    resolve({ away: true, linkElement: universalLinkElement });
+    e.preventDefault();
+  });
   const buttonContainer = document.createElement('div');
   buttonContainer.appendChild(universalLinkElement);
   if (showSwitch) {
