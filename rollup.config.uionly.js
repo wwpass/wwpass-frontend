@@ -47,6 +47,6 @@ export default [{
       babelHelpers: 'runtime',
       plugins: []
     }),
-    uglify(),
+    terser(),
   ],
 }];
