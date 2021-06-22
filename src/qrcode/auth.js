@@ -2,7 +2,7 @@ import { wwpassPasskeyAuth } from '../passkey/auth';
 
 import WebSocketPool from './wwpass.websocket';
 import { ticketAdapter } from '../ticket';
-import { getTicket } from '../getticket';
+import { getTicket, wait } from '../getticket';
 import { encodeClientKey } from '../crypto';
 
 import navigateToCallback from '../navigation';
@@ -23,11 +23,6 @@ const PROTOCOL_VERSION = 2;
 
 const WAIT_ON_ERROR = 500;
 
-
-function wait(ms) {
-  if (ms) return new Promise((r) => setTimeout(r, ms));
-  return null;
-}
 
 const redirectToWWPassApp = async (options, authResult) => {
   const json = await getTicket(options.ticketURL);
