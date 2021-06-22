@@ -319,7 +319,7 @@ describe('wwpassMobileAuth', () => {
     global.fetch.mockClear(0);
     const result = await wwpassMobileAuth(options);
     expect(global.fetch).toBeCalledWith('https://ticket.url/', { "cache": "no-store", "headers": { "cache-control": "no-cache", "pragma": "no-cache" } });
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(global.fetch).toHaveBeenCalledTimes(6);
     expect(result).toEqual({
       ppx: 'wwp_',
       version: 2,
