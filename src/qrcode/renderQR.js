@@ -65,7 +65,7 @@ export function renderQR(text, opts) {
 
   const g = `<g fill="${color}"> ${qrToElements(qrData.modules.data, qrData.modules.size)} </g>`;
   const viewBox = `viewBox="${-qrMargin} ${-qrMargin} ${qrcodesize} ${qrcodesize}"`;
-  const svgTag = `<svg xmlns="http://www.w3.org/2000/svg" ${viewBox}> ${g}
+  const svgTag = `<svg xmlns="http://www.w3.org/2000/svg" ${viewBox} style="background-color:white"> ${g}
   </svg>`;
 
   return { svgTag, qrcodesize, qrMargin };
