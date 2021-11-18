@@ -144,7 +144,7 @@ const QRCodeLogin = (
 ) => new Promise((resolve) => {
   const QRCodeElement = document.createElement('div');
   const { svgTag, qrcodesize, qrMargin } = renderQR(
-    getUniversalURL(wwpassURLoptions, false),
+    getUniversalURL(wwpassURLoptions, true),
     qrcodeStyle || {}
   );
   QRCodeElement.innerHTML = svgTag;
@@ -293,7 +293,7 @@ const sameDeviceLogin = (
   universalLinkElement.className = 'wwpassLoginButton';
   universalLinkElement.classList.add('wwpass-frontend-custom');
   universalLinkElement.innerText = (wwpassURLoptions && wwpassURLoptions.buttonText) || 'Log in with WWPass';
-  if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, true);
+  if (wwpassURLoptions) universalLinkElement.href = getUniversalURL(wwpassURLoptions, false);
   else universalLinkElement.href = '#';
   const qrCodeSwitchLink = document.createElement('a');
   if (showSwitch) {
