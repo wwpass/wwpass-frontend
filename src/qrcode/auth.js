@@ -1,7 +1,7 @@
 import { wwpassPasskeyAuth } from '../passkey/auth';
 
 import WebSocketPool from './wwpass.websocket';
-import { ticketAdapter } from '../ticket';
+import { ticketAdapter, getShortTicketForm } from '../ticket';
 import { getTicket, wait } from '../getticket';
 import { encodeClientKey } from '../crypto';
 
@@ -74,6 +74,7 @@ const qrCodeAuth = async (options, websocketPool) => {
       const key = await getClientNonceWrapper(ticket, ttl);
       const wwpassURLoptions = {
         ticket,
+        shortTicket: getShortTicketForm(ticket),
         callbackURL: options.callbackURL,
         ppx: options.ppx,
         version: PROTOCOL_VERSION,

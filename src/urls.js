@@ -30,7 +30,7 @@ const getCallbackURL = (initialOptions = {}) => {
   return url;
 };
 
-const getUniversalURL = (initialOptions = {}, allowCallbackURL = true) => {
+const getUniversalURL = (initialOptions = {}, forQRCode) => {
   const defaultOptions = {
     universal: false,
     operation: 'auth',
@@ -48,14 +48,14 @@ const getUniversalURL = (initialOptions = {}, allowCallbackURL = true) => {
   if (options.operation === 'auth') {
     url += 'auth';
     url += `?v=${options.version}`;
-    url += `&t=${encodeURIComponent(options.ticket)}`;
+    url += `&t=${encodeURIComponent(forQRCode ? options.shortTicket : options.ticket)}`;
     url += `&ppx=${encodeURIComponent(options.ppx)}`;
 
     if (options.clientKey) {
       url += `&ck=${options.clientKey}`;
     }
 
-    if (options.callbackURL && allowCallbackURL) {
+    if (options.callbackURL && !forQRCode) {
       url += `&c=${encodeURIComponent(options.callbackURL)}`;
     }
   } else {

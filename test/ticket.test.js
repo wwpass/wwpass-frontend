@@ -1,4 +1,4 @@
-import { isClientKeyTicket, ticketAdapter } from '../src/ticket';
+import { isClientKeyTicket, ticketAdapter, getShortTicketForm } from '../src/ticket';
 
 test('ticket with :c: is correctly identified as having client key', () => {
   expect(isClientKeyTicket('SPName:c:nonce@spfe.address:1234')).toBe(true);
@@ -19,27 +19,34 @@ describe('ticketAdapter', () => {
       result: true,
       ttl: 600
     };
-  
+
     const goldTicket = {
       ticket: 'Human%20QR%20Code%20Test:e0c6f2b89ff4ed596cdd388c77df3517@p-sp-03-30:16033',
       ttl: 600
     };
-  
+
     expect(ticketAdapter(spfeParsedResponse)).toEqual(goldTicket);
   });
-  
+
   test('should convert SPFe response to ticket object and add TTL', () => {
     const spfeParsedResponse = {
       data: 'Human%20QR%20Code%20Test:e0c6f2b89ff4ed596cdd388c77df3517@p-sp-03-30:16033',
       encoding: 'plain',
       result: true
     };
-  
+
     const goldTicket = {
       ticket: 'Human%20QR%20Code%20Test:e0c6f2b89ff4ed596cdd388c77df3517@p-sp-03-30:16033',
       ttl: 120
     };
-  
+
     expect(ticketAdapter(spfeParsedResponse)).toEqual(goldTicket);
-  });  
+  });
+});
+
+describe('getShortTicketForm', () => {
+  test('remove all OTP beside 8 bytes', () => {
+    expect(getShortTicketForm('Human%20QR%20Code%20Test:e0c6f2b89ff4ed596cdd388c77df3517@p-sp-03-30:16033')).toBe('Human%20QR%20Code%20Test:e0c6f2b89ff4ed59@p-sp-03-30:16033');
+    expect(getShortTicketForm('Human%20QR%20Code%20Test:pcs:e0c6f2b89ff4ed596cdd388c77df3517@p-sp-03-30:16033')).toBe('Human%20QR%20Code%20Test:pcs:e0c6f2b89ff4ed59@p-sp-03-30:16033');
+  });
 });
