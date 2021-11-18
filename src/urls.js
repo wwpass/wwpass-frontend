@@ -9,19 +9,24 @@ const getCallbackURL = (initialOptions = {}) => {
     hw: false // hardware legacy
   };
 
-  const options = Object.assign({}, defaultOptions, initialOptions);
+  const options = { ...defaultOptions, ...initialOptions };
 
-  let url = options.callbackURL;
-  const firstDelimiter = (url.indexOf('?') === -1) ? '?' : '&';
-
-  url += `${firstDelimiter + encodeURIComponent(options.ppx)}version=${options.version}`;
-  url += `&${encodeURIComponent(options.ppx)}ticket=${encodeURIComponent(options.ticket)}`;
-  url += `&${encodeURIComponent(options.ppx)}status=${encodeURIComponent(options.status)}`;
-  url += `&${encodeURIComponent(options.ppx)}reason=${encodeURIComponent(options.reason)}`;
-  if (options.hw) {
-    url += `&${encodeURIComponent(options.ppx)}hw=1`;
+  let url = '';
+  if (typeof (options.callbackURL) === 'string') {
+    url = options.callbackURL;
   }
 
+  const firstDelimiter = (url.indexOf('?') === -1) ? '?' : '&';
+  url += firstDelimiter;
+  const callbackParameters = ['version', 'ticket', 'status', 'reason'];
+  if (options.hw) {
+    callbackParameters.push('hw');
+    options.hw = 1;
+  }
+
+  callbackParameters.forEach((name, index) => {
+    url += `${encodeURIComponent(options.ppx)}${name}=${encodeURIComponent(options[name])}${index === callbackParameters.length - 1 ? '' : '&'}`;
+  });
   return url;
 };
 
@@ -36,7 +41,7 @@ const getUniversalURL = (initialOptions = {}, forQRCode) => {
     clientKey: undefined
   };
 
-  const options = Object.assign({}, defaultOptions, initialOptions);
+  const options = { ...defaultOptions, ...initialOptions };
 
   let url = options.universal ? 'https://get.wwpass.com/' : 'wwpass://';
 

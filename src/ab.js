@@ -1,4 +1,4 @@
-const abToB64 = data => btoa(String.fromCharCode.apply(null, new Uint8Array(data)));
+const abToB64 = (data) => btoa(String.fromCharCode.apply(null, new Uint8Array(data)));
 
 const b64ToAb = (base64) => {
   const s = atob(base64);
@@ -9,7 +9,7 @@ const b64ToAb = (base64) => {
   return bytes.buffer;
 };
 
-const ab2str = buf => String.fromCharCode.apply(null, new Uint16Array(buf));
+const ab2str = (buf) => String.fromCharCode.apply(null, new Uint16Array(buf));
 
 const str2ab = (str) => {
   const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char

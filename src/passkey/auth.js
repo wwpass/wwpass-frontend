@@ -3,15 +3,14 @@ import { abToB64 } from '../ab';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
 import { getClientNonceWrapper } from '../nonce';
-import { wwpassAuth, waitForRemoval } from './passkey';
-import navigateToCallback from './../navigation';
+import { wwpassAuth, waitForRemoval, pluginPresent } from './passkey';
 import { renderPassKeyButton } from './ui';
 
-const doWWPassPasskeyAuth = options => getTicket(options.ticketURL).then((json) => {
+const doWWPassPasskeyAuth = (options) => getTicket(options.ticketURL).then((json) => {
   const response = ticketAdapter(json);
-  const ticket = response.ticket;
+  const { ticket } = response;
   return getClientNonceWrapper(ticket, response.ttl)
-  .then(key => wwpassAuth({
+  .then((key) => wwpassAuth({
     ticket,
     clientKeyNonce: key !== undefined ? abToB64(key) : undefined,
     log: options.log
@@ -20,32 +19,18 @@ const doWWPassPasskeyAuth = options => getTicket(options.ticketURL).then((json) 
    * to keep the original one to find nonce */
 });
 
-const wwpassPasskeyAuth = initialOptions => (new Promise((resolve, reject) => {
-  const defaultOptions = {
-    ticketURL: '',
-    callbackURL: '',
-    ppx: 'wwp_',
-    log: () => {}
-  };
-  const options = Object.assign({}, defaultOptions, initialOptions);
-  if (!options.passkeyButton) {
-    reject({
-      ppx: options.ppx,
-      version: options.version,
-      code: WWPASS_STATUS.INTERNAL_ERROR,
-      message: 'Cannot find passkey element',
-      callbackURL: options.callbackURL
-    });
-  }
-  if (options.passkeyButton.children.length === 0) {
-    options.passkeyButton.appendChild(renderPassKeyButton());
-  }
-  let authUnderway = false;
-  options.passkeyButton.addEventListener('click', (e) => {
-    if (!authUnderway) {
-      authUnderway = true;
+const PASSKEY_BUTTON_TIMEOUT = 1000;
+
+let recentlyClicked = false;
+const onButtonClick = (options) => {
+  if (recentlyClicked === false) {
+    recentlyClicked = true;
+    let enableButtonTimer = setTimeout(() => {
+      recentlyClicked = false;
+      enableButtonTimer = false;
+    }, PASSKEY_BUTTON_TIMEOUT);
+    return new Promise((resolve, reject) => {
       doWWPassPasskeyAuth(options).then((newTicket) => {
-        authUnderway = false;
         resolve({
           ppx: options.ppx,
           version: options.version,
@@ -55,11 +40,10 @@ const wwpassPasskeyAuth = initialOptions => (new Promise((resolve, reject) => {
           callbackURL: options.callbackURL,
           hw: true
         });
-      }, (err) => {
-        authUnderway = false;
+      }).catch((err) => {
         if (!err.code) {
-          initialOptions.log('passKey error', err);
-        } else if (err.code === WWPASS_STATUS.INTERNAL_ERROR || initialOptions.returnErrors) {
+          options.log('passKey error', err);
+        } else if (err.code === WWPASS_STATUS.INTERNAL_ERROR || options.returnErrors) {
           reject({
             ppx: options.ppx,
             version: options.version,
@@ -68,13 +52,72 @@ const wwpassPasskeyAuth = initialOptions => (new Promise((resolve, reject) => {
             callbackURL: options.callbackURL
           });
         }
+      }).finally(() => {
+        if (enableButtonTimer !== false) {
+          clearTimeout(enableButtonTimer);
+          enableButtonTimer = false;
+          recentlyClicked = false;
+        }
       });
-    }
+    });
+  }
+  return false;
+};
+
+let haveEventListener = false;
+const initPasskeyButton = (options, resolve) => {
+  if (options.passkeyButton.innerHTML.length === 0) {
+    options.passkeyButton.appendChild(renderPassKeyButton());
+  }
+  if (haveEventListener) return;
+  options.passkeyButton.addEventListener('click', (e) => {
+    resolve(onButtonClick(options));
     e.preventDefault();
   }, false);
-})).then(navigateToCallback, navigateToCallback);
+  haveEventListener = true;
+};
+
+const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => {
+  const defaultOptions = {
+    ticketURL: '',
+    callbackURL: '',
+    ppx: 'wwp_',
+    forcePasskeyButton: true,
+    log: () => {}
+  };
+  const options = { ...defaultOptions, ...initialOptions };
+  if (!options.passkeyButton) {
+    reject({
+      ppx: options.ppx,
+      version: options.version,
+      code: WWPASS_STATUS.INTERNAL_ERROR,
+      message: 'Cannot find passkey element',
+      callbackURL: options.callbackURL
+    });
+  }
+  if (options.forcePasskeyButton || pluginPresent()) {
+    if (options.passkeyButton.style.display === 'none') {
+      options.passkeyButton.style.display = null;
+    }
+    initPasskeyButton(options, resolve);
+  } else {
+    const displayBackup = options.passkeyButton.style.display;
+    options.passkeyButton.style.display = 'none';
+    const observer = new MutationObserver((_mutationsList, _observer) => {
+      if (pluginPresent()) {
+        _observer.disconnect();
+        options.passkeyButton.style.display = displayBackup === 'none' ? null : displayBackup;
+        initPasskeyButton(options, resolve);
+      }
+    });
+    observer.observe(document.head, {
+      childList: true
+    });
+  }
+}));
 
 export {
   wwpassPasskeyAuth,
-  waitForRemoval
+  waitForRemoval,
+  onButtonClick
 };

@@ -5,11 +5,11 @@ import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
 
 export default [{
-  input: 'src/index.js',
+  input: 'src/uionly.js',
   output: {
     sourcemap: true,
     format: 'iife',
-    file: 'dist/wwpass-frontend.min.js',
+    file: 'dist/wwpass-frontend-ui.js',
   },
   treeshake: true,
   plugins: [
@@ -23,16 +23,15 @@ export default [{
     babel({
       exclude: 'node_modules/**',
       babelHelpers: 'runtime',
-      plugins: [],
+      plugins: []
     }),
-    terser(),
   ],
 },{
-  input: 'src/index.js',
+  input: 'src/uionly.js',
   output: {
     sourcemap: true,
     format: 'iife',
-    file: 'dist/wwpass-frontend.js',
+    file: 'dist/wwpass-frontend-ui.min.js',
   },
   treeshake: true,
   plugins: [
@@ -40,8 +39,7 @@ export default [{
     resolve({
       jsnext: true,
       main: true,
-      browser: true,
-      preferBuiltins: false
+      browser: true
     }),
     commonjs(),
     babel({
@@ -49,5 +47,6 @@ export default [{
       babelHelpers: 'runtime',
       plugins: []
     }),
+    terser(),
   ],
 }];

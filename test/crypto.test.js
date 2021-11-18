@@ -25,6 +25,6 @@ test('encodeBase64ForURI', () => {
 
 test('saveBuffer and loadBuffer', () => {
     const testBuffer = "TestBUFFER";
-    saveBuffer(new Buffer(testBuffer));
+    saveBuffer(new Buffer.from(testBuffer));
     expect(loadBuffer()).toEqual(new ArrayBuffer(testBuffer));
 });

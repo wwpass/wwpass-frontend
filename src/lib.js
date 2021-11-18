@@ -1,6 +1,6 @@
 import { WWPassCryptoPromise as cryptoPromise } from './wwpass.crypto';
 import { copyClientNonce } from './nonce';
-import { wwpassQRCodeAuth as QRCodeAuth } from './qrcode/auth';
+import { wwpassMobileAuth as QRCodeAuth } from './qrcode/auth';
 import openWithTicket from './open';
 import { wwpassPasskeyAuth as passkeyAuth } from './passkey/auth';
 import { pluginPresent, waitForRemoval } from './passkey/passkey';
