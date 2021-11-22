@@ -15,6 +15,7 @@ const getTicket = async (url) => {
     try {
       // eslint-disable-next-line no-await-in-loop
       response = await fetch(url, { cache: 'no-store', headers: noCacheHeaders });
+      if (response != null && response.ok) break;
     } catch (err) {
       /* Probably fetch() was cancelled because of page closing or user cancelling loads */
       // eslint-disable-next-line no-await-in-loop
