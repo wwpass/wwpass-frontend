@@ -64,17 +64,16 @@ const onButtonClick = (options) => {
   return false;
 };
 
-let haveEventListener = false;
 const initPasskeyButton = (options, resolve) => {
-  if (options.passkeyButton.innerHTML.length === 0) {
-    options.passkeyButton.appendChild(renderPassKeyButton());
+  const button = options.passkeyButton;
+  if (button.innerHTML.length === 0) {
+    button.appendChild(renderPassKeyButton());
   }
-  if (haveEventListener) return;
-  options.passkeyButton.addEventListener('click', (e) => {
-    resolve(onButtonClick(options));
+  // Not using addEventListener so on reinit the previous handler is overwritten.
+  button.onclick = (e) => {
+    onButtonClick(options).then(resolve);
     e.preventDefault();
-  }, false);
-  haveEventListener = true;
+  };
 };
 
 const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => {
