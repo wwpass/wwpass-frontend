@@ -5,7 +5,7 @@ import { ticketAdapter, getShortTicketForm } from '../ticket';
 import { getTicket } from '../getticket';
 import { encodeClientKey } from '../crypto';
 
-import { getClientNonceWrapper } from '../nonce';
+import { getClientNonceIfNeeded } from '../nonce';
 
 import { WWPASS_STATUS } from '../constants';
 
@@ -30,7 +30,7 @@ const redirectToWWPassApp = async (options, authResult) => {
   const response = ticketAdapter(json);
   const { ticket } = response;
   const { ttl } = response;
-  const key = await getClientNonceWrapper(ticket, ttl);
+  const key = await getClientNonceIfNeeded(ticket, ttl);
   // eslint-disable-next-line no-param-reassign
   authResult.linkElement.href = getUniversalURL({
     ticket,
@@ -66,7 +66,7 @@ const qrCodeAuth = async (options, websocketPool) => {
       const { ticket } = response;
       const { ttl } = response;
       // eslint-disable-next-line no-await-in-loop
-      const key = await getClientNonceWrapper(ticket, ttl);
+      const key = await getClientNonceIfNeeded(ticket, ttl);
       const wwpassURLoptions = {
         ticket,
         shortTicket: getShortTicketForm(ticket),

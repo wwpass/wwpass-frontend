@@ -6,8 +6,8 @@ import { WWPASS_STATUS } from './constants';
 
 const exportKey = (type, key) => subtle.exportKey(type, key);
 
-// generate digest from string
-const hex = (buffer) => {
+// Hexlify binary buffer
+const hexlify = (buffer) => {
   const hexCodes = [];
   const view = new DataView(buffer);
   for (let i = 0; i < view.byteLength; i += 4) {
@@ -25,13 +25,9 @@ const hex = (buffer) => {
   return hexCodes.join('');
 };
 
+
 // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-const sha256 = (str) => {
-  // We transform the string into an arraybuffer.
-  const buffer = str2ab(str);
-  return subtle.digest({ name: 'SHA-256' }, buffer)
-  .then((hash) => hex(hash));
-};
+const sha256 = async (str) => hexlify(await subtle.digest({ name: 'SHA-256' }, str2ab(str)));
 
 const clean = (items) => {
   const currentDate = window.Date.now();
@@ -55,69 +51,61 @@ const saveNonces = (nonces) => {
   window.localStorage.setItem('wwpassNonce', JSON.stringify(nonces));
 };
 
-// get from localStorage Client Nonce
-const getClientNonce = (ticket, newTTL = null) => {
+// Retrieve client key nonce from local stroage
+const getClientNonce = async (ticket, newTTL = null) => {
   if (!subtle) {
     throw new WWPassError(WWPASS_STATUS.SSL_REQUIRED, 'Client-side encryption requires https.');
   }
 
   const nonces = loadNonces();
+  const hash = await sha256(ticket);
+  const nonce = nonces.find((it) => hash === it.hash);
 
-  return sha256(ticket)
-  .then((hash) => {
-    const nonce = nonces.find((it) => hash === it.hash);
-    const key = (nonce && nonce.key) ? b64ToAb(nonce.key) : undefined;
-    if (newTTL && key) {
-      nonce.deadline = window.Date.now() + (newTTL * 1000);
-      saveNonces(nonces);
-    }
-    return key;
-  });
+  const key = (nonce && nonce.key) ? b64ToAb(nonce.key) : undefined;
+  if (newTTL && key) {
+    nonce.deadline = window.Date.now() + (newTTL * 1000);
+    saveNonces(nonces);
+  }
+
+  return key;
 };
 
 // generate Client Nonce and set it to localStorage
-const generateClientNonce = (ticket, ttl = 120) => {
+const generateClientNonce = async (ticket, ttl = 120) => {
   if (!subtle) {
     throw new WWPassError(WWPASS_STATUS.SSL_REQUIRED, 'Client-side encryption requires https.');
   }
-
-  return getClientNonce(ticket).then((loadedKey) => {
-    if (loadedKey) {
-      return loadedKey;
-    }
-
-    return subtle.generateKey(
-      {
-        name: 'AES-CBC',
-        length: 256
-      },
-      true, // is extractable
-      ['encrypt', 'decrypt']
-    )
-    .then((key) => exportKey('raw', key))
-    .then((rawKey) => sha256(ticket).then((digest) => {
-      const nonce = {
-        hash: digest,
-        key: abToB64(rawKey),
-        deadline: window.Date.now() + (ttl * 1000)
-      };
-      const nonces = loadNonces();
-      nonces.push(nonce);
-      saveNonces(nonces);
-
-      // hack for return key
-      return rawKey;
-    }));
-  });
+  const loadedKey = await getClientNonce(ticket);
+  if (loadedKey) {
+    return loadedKey;
+  }
+  const keyPromise = subtle.generateKey(
+    {
+      name: 'AES-CBC',
+      length: 256
+    },
+    true, // is extractable
+    ['encrypt', 'decrypt']
+  );
+  const [rawKey, digest] = await Promise.all(
+    keyPromise.then((key) => exportKey('raw', key)),
+    sha256(ticket)
+  );
+  const nonce = {
+    hash: digest,
+    key: abToB64(rawKey),
+    deadline: window.Date.now() + (ttl * 1000)
+  };
+  const nonces = loadNonces();
+  nonces.push(nonce);
+  saveNonces(nonces);
+  return rawKey;
 };
 
-const getClientNonceWrapper = (ticket, ttl = 120) => {
+const getClientNonceIfNeeded = async (ticket, ttl = 120) => {
   if (!isClientKeyTicket(ticket)) {
-    return new Promise((resolve) => {
-      resolve(undefined);
-    });
+    return undefined;
   }
-
   return generateClientNonce(ticket, ttl);
 };
 
@@ -135,6 +123,6 @@ const copyClientNonce = (oldTicket, newTicket, ttl) => getClientNonce(oldTicket)
 export {
   getClientNonce,
   generateClientNonce,
-  getClientNonceWrapper,
+  getClientNonceIfNeeded,
   copyClientNonce
 };

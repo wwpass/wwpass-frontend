@@ -1,7 +1,8 @@
 
-let mimeTypeGetter = jest.spyOn(window.navigator, 'mimeTypes', 'get');
+const mimeTypeGetter = jest.spyOn(window.navigator, 'mimeTypes', 'get');
 mimeTypeGetter.mockReturnValue({});
 
 export {
-    mimeTypeGetter
-}
+  // eslint-disable-next-line import/prefer-default-export
+  mimeTypeGetter
+};

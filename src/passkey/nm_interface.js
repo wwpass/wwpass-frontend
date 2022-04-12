@@ -87,4 +87,8 @@ const wwpassNMExecute = (inputRequest) => {
 
 const nmWaitForRemoval = (log = () => {}) => wwpassNMCall('on_key_rm', undefined, log);
 
-export { wwpassNMExecute, nmWaitForRemoval, isNativeMessagingExtensionReady };
+export {
+  wwpassNMExecute,
+  nmWaitForRemoval,
+  isNativeMessagingExtensionReady
+};

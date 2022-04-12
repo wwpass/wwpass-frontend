@@ -1,5 +1,5 @@
 import { wait } from './util';
-import WebSocketPool from './qrcode/wwpass.websocket';
+import WebSocketPool from './mobile/wwpass.websocket';
 import { getClientNonce } from './nonce';
 import { isClientKeyTicket } from './ticket';
 

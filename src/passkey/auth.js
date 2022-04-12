@@ -2,14 +2,50 @@ import { WWPASS_STATUS, WWPASS_OK_MSG } from '../constants';
 import { abToB64 } from '../ab';
 import { ticketAdapter } from '../ticket';
 import { getTicket } from '../getticket';
-import { getClientNonceWrapper } from '../nonce';
-import { wwpassAuth, waitForRemoval, pluginPresent } from './passkey';
-import { renderPassKeyButton } from './ui';
+import { getClientNonceIfNeeded } from '../nonce';
+import WWPassError from '../error';
+import { wwpassNMExecute, nmWaitForRemoval, isNativeMessagingExtensionReady as pluginPresent } from './nm_interface';
+import { wwpassNoSoftware, wwpassMessageForPlatform, renderPassKeyButton } from './ui';
+
+const wwpassPlatformName = () => {
+  const { userAgent } = navigator;
+  const knownPlatforms = ['Android', 'iPhone', 'iPad'];
+  for (let i = 0; i < knownPlatforms.length; i += 1) {
+    if (userAgent.search(new RegExp(knownPlatforms[i], 'i')) !== -1) {
+      return knownPlatforms[i];
+    }
+  }
+  return null;
+};
+
+const wwpassCall = async (nmFunc, request) => {
+  const platformName = wwpassPlatformName();
+  if (platformName !== null) {
+    await wwpassNoSoftware(WWPASS_STATUS.UNSUPPORTED_PLATFORM);
+    throw new WWPassError(
+      WWPASS_STATUS.UNSUPPORTED_PLATFORM,
+      wwpassMessageForPlatform(platformName)
+    );
+  }
+  try {
+    const result = await nmFunc(request);
+    return result;
+  } catch (err) {
+    if (err instanceof WWPassError && err.code === WWPASS_STATUS.NO_AUTH_INTERFACES_FOUND) {
+      await wwpassNoSoftware(err.code);
+    }
+    throw err;
+  }
+};
+
+const wwpassAuth = async (request) => wwpassCall(wwpassNMExecute, { ...request, operation: 'auth' });
+
+const waitForRemoval = async () => wwpassCall(nmWaitForRemoval);
 
 const doWWPassPasskeyAuth = (options) => getTicket(options.ticketURL).then((json) => {
   const response = ticketAdapter(json);
   const { ticket } = response;
-  return getClientNonceWrapper(ticket, response.ttl)
+  return getClientNonceIfNeeded(ticket, response.ttl)
   .then((key) => wwpassAuth({
     ticket,
     clientKeyNonce: key !== undefined ? abToB64(key) : undefined,
@@ -122,5 +158,6 @@ const wwpassPasskeyAuth = (initialOptions) => (new Promise((resolve, reject) => 
 
 export {
   wwpassPasskeyAuth,
-  waitForRemoval
+  waitForRemoval,
+  pluginPresent
 };

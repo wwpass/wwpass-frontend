@@ -1,4 +1,4 @@
-import WebSocketPool from './qrcode/wwpass.websocket';
+import WebSocketPool from './mobile/wwpass.websocket';
 import {
   ab2str, str2ab, abToB64, b64ToAb
 } from './ab';

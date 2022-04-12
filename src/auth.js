@@ -6,7 +6,7 @@ import {
   qrCodeAuthWrapper,
   redirectToWWPassApp,
   isMobile
-} from './qrcode/auth';
+} from './mobile/auth';
 
 /*
  * WWPass auth with mobile PassKey
