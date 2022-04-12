@@ -3,6 +3,7 @@ import {__RewireAPI__ as pkRewire, wwpassNMExecute, nmWaitForRemoval} from '../s
 import {wwpassExecute, waitForRemoval} from '../src/passkey/passkey';
 
 import {__RewireAPI__ as uiRewire, wwpassNoSoftware} from '../src/passkey/ui';
+import WWPassError from '../src/error';
 
 
 beforeEach(() => {
@@ -19,11 +20,11 @@ test('wwpassNoSoftware', () => {
   let showError = jest.fn();
   uiRewire.__Rewire__('wwpassShowError', showError);
   wwpassNoSoftware(604);
-  expect(showError).toBeCalledWith(expect.any(String),'WWPass &mdash; No Software Found',undefined);
+  expect(showError).toBeCalledWith(expect.any(String),'WWPass &mdash; No Software Found');
   showError = jest.fn();
   uiRewire.__Rewire__('wwpassShowError', showError);
   wwpassNoSoftware(606);
-  expect(showError).toBeCalledWith(expect.any(String),'WWPass &mdash; Unsupported Platform',undefined);
+  expect(showError).toBeCalledWith(expect.any(String),'WWPass &mdash; Unsupported Platform');
 });
 
 
@@ -104,7 +105,7 @@ test('wwpassAuth - NmAuthFailure', () => {
   return expect(wwpassNMExecute({
     operation: 'auth',
     ticket: 'testTicket',
-  })).rejects.toEqual({code: 404, message:'FailureMessage'});
+  })).rejects.toMatchObject({code: 404, message:'FailureMessage'});
 });
 
 test('wwpassAuth - NmAuthFailure from dispatcher', () => {
@@ -127,7 +128,7 @@ test('wwpassAuth - NmAuthFailure from dispatcher', () => {
   return expect(wwpassExecute({
     operation: 'auth',
     ticket: 'testTicket',
-  })).rejects.toEqual({code: 404, message:'FailureMessage'});
+  })).rejects.toMatchObject({code: 404, message:'FailureMessage'});
 });
 
 test('wwpassAuth - NmAuthWaitForeRemoval', () => {

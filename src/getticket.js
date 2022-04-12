@@ -1,13 +1,9 @@
+import { wait } from './util';
 import WebSocketPool from './qrcode/wwpass.websocket';
 import { getClientNonce } from './nonce';
 import { isClientKeyTicket } from './ticket';
 
 const noCacheHeaders = { pragma: 'no-cache', 'cache-control': 'no-cache' };
-
-function wait(ms) {
-  if (ms) return new Promise((r) => setTimeout(r, ms));
-  return null;
-}
 
 const getTicket = async (url) => {
   let response = null;

@@ -1,11 +1,7 @@
 import { renderQR, insertInnerSvg } from './renderQR';
 import { getUniversalURL } from '../urls';
 import WWPassError from '../error';
-import { WWPASS_STATUS } from '../passkey/constants';
-
-const isMobile = () => navigator && (
-  ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i))
-  || ((navigator.maxTouchPoints > 1) && (navigator.platform === 'MacIntel')));
+import { WWPASS_STATUS } from '../constants';
 
 const removeLoader = (element) => {
   while (element.firstChild) {
@@ -334,6 +330,5 @@ export {
   QRCodeLogin,
   sameDeviceLogin,
   clearQRCode,
-  setRefersh,
-  isMobile
+  setRefersh
 };

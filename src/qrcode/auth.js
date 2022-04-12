@@ -1,18 +1,16 @@
 import { wwpassPasskeyAuth } from '../passkey/auth';
-
 import WebSocketPool from './wwpass.websocket';
+import { wait } from '../util';
 import { ticketAdapter, getShortTicketForm } from '../ticket';
-import { getTicket, wait } from '../getticket';
+import { getTicket } from '../getticket';
 import { encodeClientKey } from '../crypto';
-
-import navigateToCallback from '../navigation';
 
 import { getClientNonceWrapper } from '../nonce';
 
-import { WWPASS_STATUS } from '../passkey/constants';
+import { WWPASS_STATUS } from '../constants';
 
 import {
-  QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin, isMobile
+  QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin
 } from './ui';
 import { getUniversalURL } from '../urls';
 
@@ -23,6 +21,9 @@ const PROTOCOL_VERSION = 2;
 
 const WAIT_ON_ERROR = 500;
 
+const isMobile = () => navigator && (
+  ('userAgent' in navigator && navigator.userAgent.match(/iPhone|iPod|iPad|Android/i))
+  || ((navigator.maxTouchPoints > 1) && (navigator.platform === 'MacIntel')));
 
 const redirectToWWPassApp = async (options, authResult) => {
   const json = await getTicket(options.ticketURL);
@@ -39,10 +40,9 @@ const redirectToWWPassApp = async (options, authResult) => {
     version: PROTOCOL_VERSION
   });
   authResult.linkElement.click();
-  return authResult;
 };
 
-const appAuth = async (initialOptions) => {
+const appAuth = (initialOptions) => {
   const defaultOptions = {
     universal: false,
     ticketURL: undefined,
@@ -52,12 +52,7 @@ const appAuth = async (initialOptions) => {
     log: () => {}
   };
   const options = { ...defaultOptions, ...initialOptions };
-
-  const result = await sameDeviceLogin(options.qrcode, null, null, true);
-  if (result.away) {
-    return redirectToWWPassApp(options, result);
-  }
-  return result;
+  return sameDeviceLogin(options.qrcode, null, null, true);
 };
 
 const qrCodeAuth = async (options, websocketPool) => {
@@ -89,7 +84,6 @@ const qrCodeAuth = async (options, websocketPool) => {
         options.qrcodeStyle,
         (options.uiSwitch === 'auto' && isMobile()) || options.uiSwitch === 'always'
       );
-      if (result.away) return redirectToWWPassApp(options, result);
       if (!result.refresh) return result;
     } catch (err) {
       if (!err.status) {
@@ -143,90 +137,10 @@ const qrCodeAuthWrapper = (options) => {
   });
 };
 
-/*
- * WWPass auth with mobile PassKey
- *
-options = {
-    'ticketURL': undefined, // string
-    'callbackURL': undefined, // string
-    'uiType': 'auto', // 'auto' | 'button' | 'qrcode'
-    'uiSwitch': 'auto', // 'auto' | 'always' | 'never'
-    'development': false, // work with dev server
-    'log': function (message) || console.log, // another log handler
-}
- */
-const wwpassMobileAuth = async (initialOptions) => {
-  const defaultOptions = {
-    ticketURL: undefined,
-    callbackURL: undefined,
-    uiType: 'auto',
-    uiSwitch: 'auto',
-    version: 2,
-    ppx: 'wwp_',
-    spfewsAddress: 'wss://spfews.wwpass.com',
-    qrcodeStyle: {
-      width: 256,
-      prefix: 'wwp_'
-    },
-    log: () => {}
-  };
-  const options = { ...defaultOptions, ...initialOptions };
-  options.qrcodeStyle = { ...defaultOptions.qrcodeStyle, ...initialOptions.qrcodeStyle };
-
-  if (!options.ticketURL) {
-    throw Error('ticketURL not found');
-  }
-
-  if (!options.callbackURL) {
-    throw Error('callbackURL not found');
-  }
-
-  if (!options.qrcode) {
-    throw Error('Element not found');
-  }
-
-  let executor = null;
-  switch (options.uiType) {
-  case 'button':
-    executor = appAuth;
-    break;
-  case 'qrcode':
-    executor = qrCodeAuthWrapper;
-    break;
-  case 'auto':
-  default:
-    executor = isMobile() ? appAuth : qrCodeAuthWrapper;
-    break;
-  }
-
-  if (options.uiCallback) {
-    options.uiCallback(executor === appAuth ? { button: true } : { qrcode: true });
-  }
-
-  // Continue until an exception is thrown or qrcode element is removed from DOM
-  do {
-    // eslint-disable-next-line no-await-in-loop
-    const result = await executor(options);
-    if (options.uiCallback) options.uiCallback(result);
-    if (result.button) {
-      executor = appAuth;
-    } else if (result.qrcode) {
-      executor = qrCodeAuthWrapper;
-    }
-    if (result.ticket) {
-      navigateToCallback(result);
-    }
-    if (!result.refresh) {
-      if (options.once || result.status === WWPASS_STATUS.TERMINAL_ERROR) return result;
-    }
-  } while (document.documentElement.contains(options.qrcode));
-  return {
-    status: WWPASS_STATUS.TERMINAL_ERROR,
-    reason: 'QRCode element is not in DOM'
-  };
-};
-
 export {
+  isMobile,
   getTicket,
-  wwpassMobileAuth
+  redirectToWWPassApp,
+  appAuth,
+  qrCodeAuthWrapper
 };

@@ -13,7 +13,7 @@ jest.mock('../src/navigation',()=>( jest.fn() ));
 getClientNonceWrapper.mockImplementation(() => Promise.resolve(b64ToAb("y1HeSxudpHRgbSVNIQeWhpggsejSaEFkN4E0uW1h2X4=")));
 
 
-import { wwpassMobileAuth } from '../src/qrcode/auth';
+import { wwpassMobileAuth } from '../src/auth';
 import { QRCodeLogin, sameDeviceLogin } from '../src/qrcode/ui';
 
 

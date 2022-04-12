@@ -1,9 +1,9 @@
-import { WWPASS_STATUS } from './constants';
-import { havePlugin, wwpassPluginExecute, pluginWaitForRemoval } from './plugin_interface';
+import WWPassError from '../error';
+import { WWPASS_STATUS } from '../constants';
 import { isNativeMessagingExtensionReady, wwpassNMExecute, nmWaitForRemoval } from './nm_interface';
 import { wwpassNoSoftware, wwpassMessageForPlatform } from './ui';
 
-const pluginPresent = () => (havePlugin() || isNativeMessagingExtensionReady());
+const pluginPresent = isNativeMessagingExtensionReady;
 
 const wwpassPlatformName = () => {
   const { userAgent } = navigator;
@@ -16,49 +16,31 @@ const wwpassPlatformName = () => {
   return null;
 };
 
-// N.B. it call functions in REVERSE order
-const chainedCall = (functions, request, resolve, reject) => {
-  functions.pop()(request).then(
-    resolve,
-    (e) => {
-      if (e.code === WWPASS_STATUS.NO_AUTH_INTERFACES_FOUND) {
-        if (functions.length > 0) {
-          chainedCall(functions, request, resolve, reject);
-        } else {
-          wwpassNoSoftware(e.code, () => {});
-          reject(e);
-        }
-      } else {
-        reject(e);
-      }
-    }
-  );
-};
-
-const wwpassCall = (nmFunc, pluginFunc, request) => new Promise((resolve, reject) => {
+const wwpassCall = async (nmFunc, request) => {
   const platformName = wwpassPlatformName();
   if (platformName !== null) {
-    wwpassNoSoftware(WWPASS_STATUS.UNSUPPORTED_PLATFORM, () => {
-      reject({
-        code: WWPASS_STATUS.UNSUPPORTED_PLATFORM,
-        message: wwpassMessageForPlatform(platformName)
-      });
-    });
-    return;
+    await wwpassNoSoftware(WWPASS_STATUS.UNSUPPORTED_PLATFORM);
+    throw new WWPassError(
+      WWPASS_STATUS.UNSUPPORTED_PLATFORM,
+      wwpassMessageForPlatform(platformName)
+    );
   }
-
-  if (havePlugin()) {
-    chainedCall([nmFunc, pluginFunc], request, resolve, reject);
-  } else {
-    chainedCall([pluginFunc, nmFunc], request, resolve, reject);
+  try {
+    const result = await nmFunc(request);
+    return result;
+  } catch (err) {
+    if (err instanceof WWPassError && err.code === WWPASS_STATUS.NO_AUTH_INTERFACES_FOUND) {
+      await wwpassNoSoftware(err.code);
+    }
+    throw err;
   }
-});
+};
 
-const wwpassAuth = (request) => (wwpassCall(wwpassNMExecute, wwpassPluginExecute, { ...request, operation: 'auth' }));
+const wwpassAuth = async (request) => wwpassCall(wwpassNMExecute, { ...request, operation: 'auth' });
 
-const wwpassExecute = (request) => (wwpassCall(wwpassNMExecute, wwpassPluginExecute, request));
+const wwpassExecute = async (request) => wwpassCall(wwpassNMExecute, request);
 
-const waitForRemoval = () => (wwpassCall(nmWaitForRemoval, pluginWaitForRemoval));
+const waitForRemoval = async () => wwpassCall(nmWaitForRemoval);
 
 export {
   pluginPresent,

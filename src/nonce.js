@@ -2,7 +2,7 @@ import { abToB64, b64ToAb, str2ab } from './ab';
 import { isClientKeyTicket } from './ticket';
 import { subtle } from './crypto';
 import WWPassError from './error';
-import { WWPASS_STATUS } from './passkey/constants';
+import { WWPASS_STATUS } from './constants';
 
 const exportKey = (type, key) => subtle.exportKey(type, key);
 
