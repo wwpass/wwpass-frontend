@@ -56,11 +56,10 @@ const generateClientNonce = async (ticket, ttl = 120) => {
   if (loadedKey) {
     return loadedKey;
   }
-  const keyPromise = generateKey();
-  const [rawKey, digest] = await Promise.all(
-    keyPromise.then((key) => exportKey('raw', key)),
+  const [rawKey, digest] = await Promise.all([
+    generateKey().then((key) => exportKey(key)),
     sha256(ticket)
-  );
+  ]);
   const nonce = {
     hash: digest,
     key: abToB64(rawKey),

@@ -6,7 +6,7 @@ import {
 } from '../src/crypto';
 
 test('generateKey and encodeClientKey', async () => {
-  const key = await exportKey('raw', await generateKey());
+  const key = await exportKey(await generateKey());
   expect(key).toBeInstanceOf(Buffer);
   expect(key.length).toEqual(32);
   expect(encodeClientNonce(key)).toMatch(/[a-zA-Z0-9.-]{43}_/);

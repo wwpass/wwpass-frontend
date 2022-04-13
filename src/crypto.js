@@ -6,12 +6,12 @@ const subtle = crypto ? (crypto.webkitSubtle || crypto.subtle) : null;
 
 const encodeClientNonce = (key) => abToB64(key).replace(/\+/g, '-').replace(/[/]/g, '.').replace(/=/g, '_');
 
-const {
-  encrypt, decrypt, importKey, exportKey
-} = subtle;
-
-const getRandomData = crypto.getRandomValues;
-
+// These functions cannot be just reexported. We have to capture "subtle"
+const encrypt = (options, key, data) => subtle.encrypt(options, key, data);
+const decrypt = (options, key, data) => subtle.decrypt(options, key, data);
+const exportKey = (key) => subtle.exportKey('raw', key);
+const importKey = (key, algoritm, extractable, operations) => subtle.importKey('raw', key, algoritm, extractable, operations);
+const getRandomData = (buffer) => crypto.getRandomValues(buffer);
 const generateKey = () => subtle.generateKey(
   {
     name: 'AES-CBC',
@@ -20,8 +20,6 @@ const generateKey = () => subtle.generateKey(
   true, // is extractable
   ['encrypt', 'decrypt']
 );
-
-// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
 const sha256 = async (str) => hexlify(await subtle.digest({ name: 'SHA-256' }, str2ab(str)));
 
 const haveCryptoAPI = Boolean(subtle);
@@ -35,5 +33,6 @@ export {
   encrypt,
   decrypt,
   getRandomData,
-  haveCryptoAPI
+  haveCryptoAPI,
+  subtle
 };

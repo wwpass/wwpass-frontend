@@ -38,7 +38,7 @@ class WWPassCryptoPromise {
       if (!key) {
         throw new Error('No client key nonce associated with the ticket in this browser');
       }
-      return importKey('raw', key, { name: 'AES-CBC' }, false, [
+      return importKey(key, { name: 'AES-CBC' }, false, [
         'encrypt',
         'decrypt',
         'wrapKey',
@@ -46,7 +46,7 @@ class WWPassCryptoPromise {
       ]);
     })
     .then((clientKeyNonce) => decrypt({ name: 'AES-CBC', iv: clientKeyIV }, clientKeyNonce, b64ToAb(encryptedClientKey)))
-    .then((arrayBuffer) => importKey('raw', arrayBuffer, algorithm, false, [
+    .then((arrayBuffer) => importKey(arrayBuffer, algorithm, false, [
       'encrypt',
       'decrypt',
       'wrapKey',
