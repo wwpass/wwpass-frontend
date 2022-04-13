@@ -9,7 +9,7 @@ export default [{
   output: {
     sourcemap: true,
     format: 'iife',
-    file: 'dist/wwpass-frontend.min.js',
+    file: 'dist/wwpass-frontend.min.js'
   },
   treeshake: true,
   plugins: [
@@ -23,16 +23,16 @@ export default [{
     babel({
       exclude: 'node_modules/**',
       babelHelpers: 'runtime',
-      plugins: [],
+      plugins: []
     }),
-    terser(),
-  ],
-},{
+    terser()
+  ]
+}, {
   input: 'src/index.js',
   output: {
     sourcemap: true,
     format: 'iife',
-    file: 'dist/wwpass-frontend.js',
+    file: 'dist/wwpass-frontend.js'
   },
   treeshake: true,
   plugins: [
@@ -48,6 +48,6 @@ export default [{
       exclude: 'node_modules/**',
       babelHelpers: 'runtime',
       plugins: []
-    }),
-  ],
+    })
+  ]
 }];

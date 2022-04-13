@@ -63,6 +63,7 @@ WWPass.authInit({
     - `wwp_version`: current version of the protocol. For this library it's always `2`
     - `wwp_ticket`: ticket used for authentication
     - `wwp_status` and `wwp_reason`: always `200`, `"OK"` for successful authentications
+    - `wwp_hw`: If it's present and `!= 0`, a hardware WWPass key was used for authentication. `waitForRemoval()` may be called to detect when the user removes their WWPass key
  - `ppx`: *OPTIONAL* Alternative prefix for `callbackURL` parameters. Defaults to `wwp_`
  - `forcePasskeyButton`: *OPTIONAL* Always show a button for hardware PassKey authentication. If set to `true` (default for backward compatibility), the button will be always shown. If set to `false` (recommended), the button will only be shown if any means to communicate with a passKey is detected (WWPass Extention or NPAPI plugin)
  - `uiType`: *OPTIONAL* type of UI to show. `'button'` for authentication on the same mobile device, `'qrcode'` to authenticate on other device, `'auto'` (default) to use 'button' if mobile device is detected

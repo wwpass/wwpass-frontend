@@ -1,3 +1,5 @@
+/* Conversions between String, ArrayBuffer and Base64 Strings */
+
 const abToB64 = (data) => btoa(String.fromCharCode.apply(null, new Uint8Array(data)));
 
 const b64ToAb = (base64) => {

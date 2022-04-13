@@ -1,33 +1,10 @@
-import { abToB64, b64ToAb, str2ab } from './ab';
+import { abToB64, b64ToAb } from './ab';
 import { isClientKeyTicket } from './ticket';
-import { subtle } from './crypto';
+import {
+  generateKey, exportKey, sha256, haveCryptoAPI
+} from './crypto';
 import WWPassError from './error';
 import { WWPASS_STATUS } from './constants';
-
-const exportKey = (type, key) => subtle.exportKey(type, key);
-
-// Hexlify binary buffer
-const hexlify = (buffer) => {
-  const hexCodes = [];
-  const view = new DataView(buffer);
-  for (let i = 0; i < view.byteLength; i += 4) {
-    // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-    const value = view.getUint32(i);
-    // toString(16) will give the hex representation of the number without padding
-    const stringValue = value.toString(16);
-    // We use concatenation and slice for padding
-    const padding = '00000000';
-    const paddedValue = (padding + stringValue).slice(-padding.length);
-    hexCodes.push(paddedValue);
-  }
-
-  // Join all the hex strings into one
-  return hexCodes.join('');
-};
-
-
-// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-const sha256 = async (str) => hexlify(await subtle.digest({ name: 'SHA-256' }, str2ab(str)));
 
 const clean = (items) => {
   const currentDate = window.Date.now();
@@ -53,7 +30,7 @@ const saveNonces = (nonces) => {
 
 // Retrieve client key nonce from local stroage
 const getClientNonce = async (ticket, newTTL = null) => {
-  if (!subtle) {
+  if (!haveCryptoAPI) {
     throw new WWPassError(WWPASS_STATUS.SSL_REQUIRED, 'Client-side encryption requires https.');
   }
 
@@ -72,21 +49,14 @@ const getClientNonce = async (ticket, newTTL = null) => {
 
 // generate Client Nonce and set it to localStorage
 const generateClientNonce = async (ticket, ttl = 120) => {
-  if (!subtle) {
+  if (!haveCryptoAPI) {
     throw new WWPassError(WWPASS_STATUS.SSL_REQUIRED, 'Client-side encryption requires https.');
   }
   const loadedKey = await getClientNonce(ticket);
   if (loadedKey) {
     return loadedKey;
   }
-  const keyPromise = subtle.generateKey(
-    {
-      name: 'AES-CBC',
-      length: 256
-    },
-    true, // is extractable
-    ['encrypt', 'decrypt']
-  );
+  const keyPromise = generateKey();
   const [rawKey, digest] = await Promise.all(
     keyPromise.then((key) => exportKey('raw', key)),
     sha256(ticket)

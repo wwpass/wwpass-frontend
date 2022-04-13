@@ -1,9 +1,9 @@
 import { absolutePath } from './util';
 import navigateToCallback from './navigation';
-import { WWPASS_STATUS } from './constants';
+import { WWPASS_STATUS, PROTOCOL_VERSION } from './constants';
 import {
   appAuth,
-  qrCodeAuthWrapper,
+  qrCodeAndPasskeyAuth,
   redirectToWWPassApp,
   isMobile
 } from './mobile/auth';
@@ -16,7 +16,6 @@ options = {
     'callbackURL': undefined, // string
     'uiType': 'auto', // 'auto' | 'button' | 'qrcode'
     'uiSwitch': 'auto', // 'auto' | 'always' | 'never'
-    'development': false, // work with dev server
     'log': function (message) || console.log, // another log handler
 }
  */
@@ -26,7 +25,7 @@ const wwpassMobileAuth = async (initialOptions) => {
     callbackURL: undefined,
     uiType: 'auto',
     uiSwitch: 'auto',
-    version: 2,
+    version: PROTOCOL_VERSION,
     ppx: 'wwp_',
     spfewsAddress: 'wss://spfews.wwpass.com',
     qrcodeStyle: {
@@ -56,11 +55,11 @@ const wwpassMobileAuth = async (initialOptions) => {
     executor = appAuth;
     break;
   case 'qrcode':
-    executor = qrCodeAuthWrapper;
+    executor = qrCodeAndPasskeyAuth;
     break;
   case 'auto':
   default:
-    executor = isMobile() ? appAuth : qrCodeAuthWrapper;
+    executor = isMobile() ? appAuth : qrCodeAndPasskeyAuth;
     break;
   }
 
@@ -79,7 +78,7 @@ const wwpassMobileAuth = async (initialOptions) => {
     } else if (result.button) {
       executor = appAuth;
     } else if (result.qrcode) {
-      executor = qrCodeAuthWrapper;
+      executor = qrCodeAndPasskeyAuth;
     }
     if (result.ticket) {
       navigateToCallback(result);
@@ -100,7 +99,7 @@ const authInit = (initialOptions) => {
     callbackURL: '',
     hw: false,
     ppx: 'wwp_',
-    version: 2,
+    version: PROTOCOL_VERSION,
     log: () => {}
   };
 

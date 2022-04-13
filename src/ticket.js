@@ -12,6 +12,7 @@ const isClientKeyTicket = (ticket) => {
   return flags.split('').some((element) => element === 'c');
 };
 
+/* Remove part of OTP from ticket so it can be safely displayed in QR code */
 const getShortTicketForm = (ticket) => {
   const SHORT_TICKET_LENGTH = 8; // bytes
   const infoHost = ticket.split('@');

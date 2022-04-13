@@ -1,11 +1,12 @@
-import { WWPASS_STATUS, WWPASS_UNSUPPORTED_PLATFORM_MSG_TMPL } from '../constants';
+import { WWPASS_STATUS } from '../constants';
 import {
   noChromeExtension,
   noFirefoxExtension,
   noSecurityPack,
   errorDialogCSS,
   passkeyButtonCSS,
-  passkeyButtonHTML
+  passkeyButtonHTML,
+  unsupprotedPlatfromMessage
 } from './ui_elements';
 
 const isNativeMessaging = () => {
@@ -43,7 +44,7 @@ const wwpassPlatformName = () => {
   return null;
 };
 
-const wwpassMessageForPlatform = (platformName) => `${WWPASS_UNSUPPORTED_PLATFORM_MSG_TMPL} ${platformName}`;
+const wwpassMessageForPlatform = (platformName) => `${unsupprotedPlatfromMessage} ${platformName}`;
 
 const wwpassShowError = (message, title) => new Promise((resolve) => {
   if (!document.getElementById('_wwpass_css')) {

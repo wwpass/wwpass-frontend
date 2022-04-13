@@ -66,6 +66,5 @@ const updateTicket = (url) => fetch(url, { cache: 'no-store', headers: noCacheHe
 
 export {
   getTicket,
-  updateTicket,
-  wait
+  updateTicket
 };

@@ -13,6 +13,9 @@ const noFirefoxExtension = (returnURL) => `\
 <p>Click the link below to install and enable the WWPass Authentication extension.</p>
 <p><a href="https://firefox.wwpass.com/?callbackURL=${returnURL}">Install WWPass Authentication Extension</a>`;
 
+const noAuthInterfacesMessage = 'No WWPass SecurityPack is found on your computer or WWPass Browser Plugin is disabled';
+const unsupprotedPlatfromMessage = 'WWPass authentication is not supported on';
+
 const errorDialogCSS = `#_wwpass_err_dlg {
   display: block;
   position: fixed;
@@ -95,5 +98,7 @@ export {
   noFirefoxExtension,
   errorDialogCSS,
   passkeyButtonCSS,
-  passkeyButtonHTML
+  passkeyButtonHTML,
+  noAuthInterfacesMessage,
+  unsupprotedPlatfromMessage
 };

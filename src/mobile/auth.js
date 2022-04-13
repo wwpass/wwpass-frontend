@@ -3,11 +3,11 @@ import WebSocketPool from './wwpass.websocket';
 import { wait } from '../util';
 import { ticketAdapter, getShortTicketForm } from '../ticket';
 import { getTicket } from '../getticket';
-import { encodeClientKey } from '../crypto';
+import { encodeClientNonce } from '../crypto';
 
 import { getClientNonceIfNeeded } from '../nonce';
 
-import { WWPASS_STATUS } from '../constants';
+import { WWPASS_STATUS, PROTOCOL_VERSION } from '../constants';
 
 import {
   QRCodeLogin, clearQRCode, setRefersh, sameDeviceLogin
@@ -16,8 +16,6 @@ import { getUniversalURL } from '../urls';
 
 const METHOD_KEY_NAME = 'wwpass.auth.method';
 const METHOD_QRCODE = 'qrcode';
-
-const PROTOCOL_VERSION = 2;
 
 const WAIT_ON_ERROR = 500;
 
@@ -35,7 +33,7 @@ const redirectToWWPassApp = async (options, authResult) => {
   authResult.linkElement.href = getUniversalURL({
     ticket,
     callbackURL: options.callbackURL,
-    clientKey: key ? encodeClientKey(key) : undefined,
+    clientKey: key ? encodeClientNonce(key) : undefined,
     ppx: options.ppx,
     version: PROTOCOL_VERSION
   });
@@ -47,7 +45,7 @@ const appAuth = (initialOptions) => {
     universal: false,
     ticketURL: undefined,
     callbackURL: undefined,
-    version: 2,
+    version: PROTOCOL_VERSION,
     ppx: 'wwp_',
     log: () => {}
   };
@@ -73,7 +71,7 @@ const qrCodeAuth = async (options, websocketPool) => {
         callbackURL: options.callbackURL,
         ppx: options.ppx,
         version: PROTOCOL_VERSION,
-        clientKey: key ? encodeClientKey(key) : undefined
+        clientKey: key ? encodeClientNonce(key) : undefined
       };
       websocketPool.watchTicket(ticket);
       // eslint-disable-next-line no-await-in-loop
@@ -107,7 +105,7 @@ const qrCodeAuth = async (options, websocketPool) => {
   };
 };
 
-const qrCodeAuthWrapper = (options) => {
+const qrCodeAndPasskeyAuth = (options) => {
   const websocketPool = new WebSocketPool(options);
   const promises = [
     websocketPool.promise.then((result) => {
@@ -142,5 +140,5 @@ export {
   getTicket,
   redirectToWWPassApp,
   appAuth,
-  qrCodeAuthWrapper
+  qrCodeAndPasskeyAuth
 };

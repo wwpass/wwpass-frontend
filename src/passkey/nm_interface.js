@@ -1,7 +1,7 @@
-import { WWPASS_STATUS, WWPASS_NO_AUTH_INTERFACES_FOUND_MSG } from '../constants';
+import { WWPASS_STATUS } from '../constants';
 import { wait } from '../util';
 import { wwpassShowError } from './ui';
-import { noSecurityPack } from './ui_elements';
+import { noSecurityPack, noAuthInterfacesMessage } from './ui_elements';
 import WWPassError from '../error';
 
 const EXTENSION_POLL_TIMEOUT = 200;
@@ -41,7 +41,7 @@ const wwpassNMCall = async (func, args, log = () => {}) => {
     log('%s: chrome native messaging extension is not installed', 'wwpassNMExecute');
     throw new WWPassError(
       WWPASS_STATUS.NO_AUTH_INTERFACES_FOUND,
-      WWPASS_NO_AUTH_INTERFACES_FOUND_MSG
+      noAuthInterfacesMessage
     );
   }
   if (!await waitForExtension(EXTENSION_POLL_TIMEOUT, EXTENSION_POLL_ATTEMPTS)) {
@@ -49,7 +49,7 @@ const wwpassNMCall = async (func, args, log = () => {}) => {
     log('%s: chrome native messaging extension is not installed', 'wwpassNMExecute');
     throw new WWPassError(
       WWPASS_STATUS.NO_AUTH_INTERFACES_FOUND,
-      WWPASS_NO_AUTH_INTERFACES_FOUND_MSG
+      noAuthInterfacesMessage
     );
   }
   const id = randomID();

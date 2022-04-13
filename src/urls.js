@@ -1,7 +1,9 @@
+import { PROTOCOL_VERSION } from './constants';
+
 const getCallbackURL = (initialOptions = {}) => {
   const defaultOptions = {
     ppx: 'wwp_',
-    version: 2,
+    version: PROTOCOL_VERSION,
     status: 200,
     reason: 'OK',
     ticket: undefined,
@@ -35,7 +37,7 @@ const getUniversalURL = (initialOptions = {}, forQRCode) => {
     universal: false,
     operation: 'auth',
     ppx: 'wwp_',
-    version: 2,
+    version: PROTOCOL_VERSION,
     ticket: undefined,
     callbackURL: undefined,
     clientKey: undefined
