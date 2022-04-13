@@ -7,8 +7,10 @@ const subtle = crypto ? (crypto.webkitSubtle || crypto.subtle) : null;
 const encodeClientNonce = (key) => abToB64(key).replace(/\+/g, '-').replace(/[/]/g, '.').replace(/=/g, '_');
 
 const {
-  encrypt, decrypt, importKey, exportKey, getRandomValues
+  encrypt, decrypt, importKey, exportKey
 } = subtle;
+
+const getRandomData = crypto.getRandomValues;
 
 const generateKey = () => subtle.generateKey(
   {
@@ -32,6 +34,6 @@ export {
   exportKey,
   encrypt,
   decrypt,
-  getRandomValues as getRandomData,
+  getRandomData,
   haveCryptoAPI
 };

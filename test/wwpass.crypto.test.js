@@ -69,6 +69,7 @@ describe('WWPassCryptoPromise', () => {
 });
 
 describe('WWPassCryptoPromise with AES-CBC', () => {
+  // eslint-disable-next-line jest/expect-expect
   test('Create WWPassCryptoPromise', () => WWPassCryptoPromise.getWWPassCrypto('mockTicket', 'AES-CBC'));
 
   test('Encrypt/decrypt string', () => WWPassCryptoPromise.getWWPassCrypto('mockTicket', 'AES-CBC').then(
@@ -91,6 +92,7 @@ describe('WWPassCryptoPromise with AES-CBC', () => {
 describe('WWPassCrypto', () => {
   beforeEach(() => { window.console.error = null; });
 
+  // eslint-disable-next-line jest/expect-expect
   test('Create WWPassCrypto', () => (new WWPassCrypto('mockTicket')).cryptoPromise);
 
   test('Encrypt/decrypt string', () => {
