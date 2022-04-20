@@ -1,4 +1,4 @@
-const wait = (ms) => (ms ? (new Promise((r) => setTimeout(r, ms))) : null);
+const wait = (ms) => (ms ? (new Promise((r) => setTimeout(r, ms))) : Promise.resolve(null));
 
 const absolutePath = (href) => {
   const link = document.createElement('a');
