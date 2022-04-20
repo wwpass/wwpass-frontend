@@ -88,10 +88,10 @@ const wwpassNoSoftware = async (code) => {
     let message = '';
     if (client) {
       if (client === 'Chrome') {
-        message = noChromeExtension(encodeURIComponent(window.location.href));
+        message = noChromeExtension(window.location.href);
       } else if (client === 'Firefox') {
         // Firefox
-        message = noFirefoxExtension(encodeURIComponent(window.location.href));
+        message = noFirefoxExtension(window.location.href);
       } else {
         // Wait for Edge extension
       }
