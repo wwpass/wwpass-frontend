@@ -1,14 +1,14 @@
-const noSecurityPack = `\
+const noSecurityPack = `
 <p>No Security Pack is found on your computer or WWPass&nbsp;native&nbsp;host is not responding.</p>
 <p>To install Security Pack visit <a href="https://ks.wwpass.com/download/">Key Services</a></p>
 <p><a href="https://support.wwpass.com/?topic=604">Learn more...</a></p>`;
 
-const noChromeExtension = (returnURL) => `\
+const noChromeExtension = (returnURL) => `
 <p>The WWPass Authentication extension for Chrome is not installed or is disabled in browser settings.</p>
 <p>Click the link below to install and enable the WWPass Authentication extension.</p>
 <p><a href="https://chrome.wwpass.com/?callbackURL=${encodeURIComponent(returnURL)}">Install WWPass Authentication Extension</a>`;
 
-const noFirefoxExtension = (returnURL) => `\
+const noFirefoxExtension = (returnURL) => `
 <p>The WWPass Authentication extension for Firefox is not installed or is disabled in browser settings.</p>
 <p>Click the link below to install and enable the WWPass Authentication extension.</p>
 <p><a href="https://firefox.wwpass.com/?callbackURL=${encodeURIComponent(returnURL)}">Install WWPass Authentication Extension</a>`;
