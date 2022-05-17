@@ -1,7 +1,8 @@
 
-let mimeTypeGetter = jest.spyOn(window.navigator, 'mimeTypes', 'get');
-mimeTypeGetter.mockReturnValue({'application/x-wwauth': true});
+const mimeTypeGetter = jest.spyOn(window.navigator, 'mimeTypes', 'get');
+mimeTypeGetter.mockReturnValue({ 'application/x-wwauth': true });
 
 export {
-    mimeTypeGetter
-}
+  // eslint-disable-next-line import/prefer-default-export
+  mimeTypeGetter
+};

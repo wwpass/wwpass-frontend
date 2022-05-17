@@ -51,11 +51,6 @@ export const WWPASS_STATUS = {
   UNSUPPORTED_PLATFORM: 606
 };
 
-export const WWPASS_NO_AUTH_INTERFACES_FOUND_MSG = 'No WWPass SecurityPack is found on your computer or WWPass Browser Plugin is disabled';
-export const WWPASS_UNSUPPORTED_PLATFORM_MSG_TMPL = 'WWPass authentication is not supported on';
-
-/* end of status codes */
-
 export const WWPASS_KEY_TYPE_ANY = '';
 export const WWPASS_KEY_TYPE_PASSKEY = 'passkey';
 export const WWPASS_KEY_TYPE_SERVICE = 'service';
@@ -64,3 +59,5 @@ export const WWPASS_KEY_TYPE_BLANKPASSKEY = 'blankpasskey';
 export const WWPASS_KEY_TYPE_BLANKSERVICE = 'blankservice';
 export const WWPASS_KEY_TYPE_BLANK2NDSERVICE = 'blank2ndservice';
 export const WWPASS_KEY_TYPE_DEFAULT = WWPASS_KEY_TYPE_PASSKEY;
+
+export const PROTOCOL_VERSION = 2;

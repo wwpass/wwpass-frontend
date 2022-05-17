@@ -1,9 +1,9 @@
 import {
   sameDeviceLogin,
-  QRCodeLogin,
-  isMobile
-} from './qrcode/ui';
+  QRCodeLogin
+} from './mobile/ui';
 
+import { isMobile } from './mobile/auth';
 import { version } from '../package.json';
 
 const wwpassUICycle = async (parentElement, wwpassURLoptions, ttl, callback) => {

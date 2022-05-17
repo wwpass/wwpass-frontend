@@ -1,10 +1,11 @@
-import WebSocketPool from './qrcode/wwpass.websocket';
+import WebSocketPool from './mobile/wwpass.websocket';
 import {
   ab2str, str2ab, abToB64, b64ToAb
 } from './ab';
 import {
-  encrypt, decrypt, importKey, getRandomData, concatBuffers
+  encrypt, decrypt, importKey, getRandomData
 } from './crypto';
+import { concatBuffers } from './util';
 import { getClientNonce } from './nonce';
 
 const clientKeyIV = new Uint8Array(
@@ -13,7 +14,7 @@ const clientKeyIV = new Uint8Array(
 );
 
 class WWPassCryptoPromise {
-  /* Return Promise that will be resloved to catual crypto object
+  /* Return Promise that will be resloved to actual crypto object
   with encrypt/decrypt String/ArrayBuffer methods and cleintKey member.
   Ticket must be authenticated with 'c' auth factor.
   Only supported values for algorithm are 'AES-GCM' and 'AES-CBC'.
@@ -37,7 +38,7 @@ class WWPassCryptoPromise {
       if (!key) {
         throw new Error('No client key nonce associated with the ticket in this browser');
       }
-      return importKey('raw', key, { name: 'AES-CBC' }, false, [
+      return importKey(key, { name: 'AES-CBC' }, false, [
         'encrypt',
         'decrypt',
         'wrapKey',
@@ -45,7 +46,7 @@ class WWPassCryptoPromise {
       ]);
     })
     .then((clientKeyNonce) => decrypt({ name: 'AES-CBC', iv: clientKeyIV }, clientKeyNonce, b64ToAb(encryptedClientKey)))
-    .then((arrayBuffer) => importKey('raw', arrayBuffer, algorithm, false, [
+    .then((arrayBuffer) => importKey(arrayBuffer, algorithm, false, [
       'encrypt',
       'decrypt',
       'wrapKey',
@@ -102,9 +103,6 @@ class WWPassCryptoPromise {
 
 class WWPassCrypto {
   constructor(ticket, algorithm) {
-    if (window.console && window.console.error) {
-      window.console.error('WWPassCrypto.initWithTicket is deprecated. Use WWPassCrypto.promiseWithTicket istead');
-    }
     this.cryptoPromise = WWPassCryptoPromise.getWWPassCrypto(ticket, algorithm);
   }
 

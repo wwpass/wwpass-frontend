@@ -1,7 +1,7 @@
 import { isClientKeyTicket } from './ticket';
 import { getUniversalURL } from './urls';
 import {
-  encodeClientKey
+  encodeClientNonce
 } from './crypto';
 import { generateClientNonce } from './nonce';
 
@@ -19,7 +19,7 @@ const openWithTicket = (initialOptions) => new Promise((resolve) => {
   if (isClientKeyTicket(options.ticket)) {
     generateClientNonce(options.ticket, options.ttl)
     .then((key) => {
-      options = { ...options, clientKey: encodeClientKey(key) };
+      options = { ...options, clientKey: encodeClientNonce(key) };
       const url = getUniversalURL(options);
       if (options.away) {
         window.location.href = url;

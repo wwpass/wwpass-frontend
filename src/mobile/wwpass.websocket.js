@@ -1,4 +1,4 @@
-import { WWPASS_OK_MSG, WWPASS_STATUS } from '../passkey/constants';
+import { WWPASS_OK_MSG, WWPASS_STATUS } from '../constants';
 
 class WebSocketPool {
   constructor(options) {

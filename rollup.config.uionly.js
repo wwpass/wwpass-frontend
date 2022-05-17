@@ -9,7 +9,7 @@ export default [{
   output: {
     sourcemap: true,
     format: 'iife',
-    file: 'dist/wwpass-frontend-ui.js',
+    file: 'dist/wwpass-frontend-ui.js'
   },
   treeshake: true,
   plugins: [
@@ -24,14 +24,14 @@ export default [{
       exclude: 'node_modules/**',
       babelHelpers: 'runtime',
       plugins: []
-    }),
-  ],
-},{
+    })
+  ]
+}, {
   input: 'src/uionly.js',
   output: {
     sourcemap: true,
     format: 'iife',
-    file: 'dist/wwpass-frontend-ui.min.js',
+    file: 'dist/wwpass-frontend-ui.min.js'
   },
   treeshake: true,
   plugins: [
@@ -47,6 +47,6 @@ export default [{
       babelHelpers: 'runtime',
       plugins: []
     }),
-    terser(),
-  ],
+    terser()
+  ]
 }];
