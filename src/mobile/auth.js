@@ -50,7 +50,7 @@ const appAuth = (initialOptions) => {
     log: () => {}
   };
   const options = { ...defaultOptions, ...initialOptions };
-  return sameDeviceLogin(options.qrcode, null, null, true);
+  return sameDeviceLogin(options.qrcode, options, null, true);
 };
 
 const qrCodeAuth = async (options, websocketPool) => {
@@ -71,7 +71,8 @@ const qrCodeAuth = async (options, websocketPool) => {
         callbackURL: options.callbackURL,
         ppx: options.ppx,
         version: PROTOCOL_VERSION,
-        clientKey: key ? encodeClientNonce(key) : undefined
+        clientKey: key ? encodeClientNonce(key) : undefined,
+        universal: options.universal
       };
       websocketPool.watchTicket(ticket);
       // eslint-disable-next-line no-await-in-loop
