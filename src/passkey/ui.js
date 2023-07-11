@@ -67,7 +67,6 @@ const wwpassShowError = (message, title) => new Promise((resolve) => {
   const text = document.createElement('div');
   text.innerHTML = message;
 
-
   dlg.appendChild(header);
   dlg.appendChild(text);
   dlg.appendChild(dlgClose);
@@ -77,9 +76,7 @@ const wwpassShowError = (message, title) => new Promise((resolve) => {
     const elem = document.getElementById('_wwpass_err_dlg');
     elem.parentNode.removeChild(elem);
     resolve();
-    return false;
   });
-  return true;
 });
 
 const wwpassNoSoftware = async (code) => {

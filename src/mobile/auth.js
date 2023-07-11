@@ -35,7 +35,8 @@ const redirectToWWPassApp = async (options, authResult) => {
     callbackURL: options.callbackURL,
     clientKey: key ? encodeClientNonce(key) : undefined,
     ppx: options.ppx,
-    version: PROTOCOL_VERSION
+    version: PROTOCOL_VERSION,
+    universal: options.universal || false
   });
   authResult.linkElement.click();
 };
@@ -71,7 +72,8 @@ const qrCodeAuth = async (options, websocketPool) => {
         callbackURL: options.callbackURL,
         ppx: options.ppx,
         version: PROTOCOL_VERSION,
-        clientKey: key ? encodeClientNonce(key) : undefined
+        clientKey: key ? encodeClientNonce(key) : undefined,
+        universal: options.universal || false
       };
       websocketPool.watchTicket(ticket);
       // eslint-disable-next-line no-await-in-loop

@@ -34,5 +34,4 @@ const ticketAdapter = (response) => {
   return response;
 };
 
-
 export { isClientKeyTicket, ticketAdapter, getShortTicketForm };
