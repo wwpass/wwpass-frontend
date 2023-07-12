@@ -5,7 +5,6 @@ import { __RewireAPI__ as pkRewire, wwpassNMExecute, nmWaitForRemoval } from '..
 
 import { __RewireAPI__ as uiRewire, wwpassNoSoftware } from '../src/passkey/ui';
 
-
 beforeEach(() => {
   pkRewire.__Rewire__('EXTENSION_POLL_TIMEOUT', 10);
   pkRewire.__Rewire__('EXTENSION_POLL_ATTEMPTS', 2);
@@ -21,13 +20,12 @@ test('wwpassNoSoftware', () => {
   let showError = jest.fn();
   uiRewire.__Rewire__('wwpassShowError', showError);
   wwpassNoSoftware(604);
-  expect(showError).toBeCalledWith(expect.any(String), 'WWPass &mdash; No Software Found');
+  expect(showError).toHaveBeenCalledWith(expect.any(String), 'WWPass &mdash; No Software Found');
   showError = jest.fn();
   uiRewire.__Rewire__('wwpassShowError', showError);
   wwpassNoSoftware(606);
-  expect(showError).toBeCalledWith(expect.any(String), 'WWPass &mdash; Unsupported Platform');
+  expect(showError).toHaveBeenCalledWith(expect.any(String), 'WWPass &mdash; Unsupported Platform');
 });
-
 
 test('wwpassAuth - noExtension', () => {
   expect.assertions(1);

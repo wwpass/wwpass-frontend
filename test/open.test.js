@@ -1,13 +1,9 @@
 import './crypto.mock';
-import { TextEncoder } from 'text-encoding';
 import { getUniversalURL } from '../src/urls';
 import open from '../src/open';
 
-
 import { generateClientNonce } from '../src/nonce';
 import { b64ToAb } from '../src/ab';
-
-global.TextEncoder = TextEncoder;
 
 jest.mock('../src/nonce');
 

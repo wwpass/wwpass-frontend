@@ -19,9 +19,9 @@ describe('wwpassWebSocket', () => {
     const wsPool = new WebSocketPool({});
     wsPool.watchTicket('SP%20Name:scp:nonce@spfe.addr:1234');
     const socket = wsPool.connectionPool[0];
-    expect(wsOnOpen).toBeCalledWith('wss://spfews.wwpass.com');
+    expect(wsOnOpen).toHaveBeenCalledWith('wss://spfews.wwpass.com');
     socket.onopen();
-    expect(wsSend).toBeCalledWith(JSON.stringify({ ticket: 'SP%20Name:scp:nonce@spfe.addr:1234' }));
+    expect(wsSend).toHaveBeenCalledWith(JSON.stringify({ ticket: 'SP%20Name:scp:nonce@spfe.addr:1234' }));
     socket.onmessage({ data: '{"code":100, "reason":"Starting"}' });
     socket.onmessage({ data: '{"code":100, "reason":"Starting", "clientKey":"123456"}' });
     socket.onmessage({ data: '{"code":200, "reason":"OK"}' });
@@ -41,9 +41,9 @@ describe('wwpassWebSocket', () => {
     const wsPool = new WebSocketPool({});
     wsPool.watchTicket('SP%20Name:p:some_new_nonce@spfe.addr:1234');
     const socket = wsPool.connectionPool[0];
-    expect(wsOnOpen).toBeCalledWith('wss://spfews.wwpass.com');
+    expect(wsOnOpen).toHaveBeenCalledWith('wss://spfews.wwpass.com');
     socket.onopen();
-    expect(wsSend).toBeCalledWith(JSON.stringify({ ticket: 'SP%20Name:p:some_new_nonce@spfe.addr:1234' }));
+    expect(wsSend).toHaveBeenCalledWith(JSON.stringify({ ticket: 'SP%20Name:p:some_new_nonce@spfe.addr:1234' }));
     socket.onmessage({ data: '{"code":100, "reason":"Starting"}' });
     socket.onmessage({ data: '{"code":100, "reason":"Starting", "clientKey":"123456", "originalTicket":"SP%20Name:scp:nonce@spfe.addr:1234", "ttl": 123}' });
     socket.onmessage({ data: '{"code":200, "reason":"OK"}' });
@@ -63,16 +63,16 @@ describe('wwpassWebSocket', () => {
     const wsPool = new WebSocketPool({});
     wsPool.watchTicket('SP%20Name:p:some_new_nonce@spfe.addr:1234');
     const socket1 = wsPool.connectionPool[0];
-    expect(wsOnOpen).toBeCalledWith('wss://spfews.wwpass.com');
+    expect(wsOnOpen).toHaveBeenCalledWith('wss://spfews.wwpass.com');
     socket1.onopen();
-    expect(wsSend).toBeCalledWith(JSON.stringify({ ticket: 'SP%20Name:p:some_new_nonce@spfe.addr:1234' }));
+    expect(wsSend).toHaveBeenCalledWith(JSON.stringify({ ticket: 'SP%20Name:p:some_new_nonce@spfe.addr:1234' }));
     socket1.onmessage({ data: '{"code":100, "reason":"Starting"}' });
 
     wsPool.watchTicket('SP%20Name:p:some_new_nonce2@spfe.addr:1234');
     const socket2 = wsPool.connectionPool[1];
-    expect(wsOnOpen).toBeCalledWith('wss://spfews.wwpass.com');
+    expect(wsOnOpen).toHaveBeenCalledWith('wss://spfews.wwpass.com');
     socket2.onopen();
-    expect(wsSend).toBeCalledWith(JSON.stringify({ ticket: 'SP%20Name:p:some_new_nonce@spfe.addr:1234' }));
+    expect(wsSend).toHaveBeenCalledWith(JSON.stringify({ ticket: 'SP%20Name:p:some_new_nonce@spfe.addr:1234' }));
     socket2.onmessage({ data: '{"code":100, "reason":"Starting"}' });
     socket1.onmessage({ data: '{"code":100, "reason":"Starting", "clientKey":"123456", "originalTicket":"SP%20Name:scp:nonce@spfe.addr:1234", "ttl": 123}' });
     socket2.onmessage({ data: '{"code":500, "reason":"FAIL"}' });

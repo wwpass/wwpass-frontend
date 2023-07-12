@@ -9,11 +9,10 @@ import {
   waitForRemoval,
   WWPASS_STATUS
 } from './lib';
-
-import { version } from '../package.json';
+import packageInfo from '../package.json';
 
 if ('console' in window && window.console.log) {
-  window.console.log(`WWPass frontend library version ${version}`);
+  window.console.log(`WWPass frontend library version ${packageInfo.version}`);
 }
 
 window.WWPass = {

@@ -67,8 +67,11 @@ class WWPassCryptoPromise {
     Object.assign(algorithm, {
       iv
     });
-    return encrypt(algorithm,
-      this.clientKey, arrayBuffer).then((encryptedAB) => concatBuffers(iv.buffer, encryptedAB));
+    return encrypt(
+      algorithm,
+      this.clientKey,
+      arrayBuffer
+    ).then((encryptedAB) => concatBuffers(iv.buffer, encryptedAB));
   }
 
   encryptString(string) {
@@ -80,8 +83,11 @@ class WWPassCryptoPromise {
     Object.assign(algorithm, {
       iv: encryptedArrayBuffer.slice(0, this.ivLen)
     });
-    return decrypt(algorithm,
-      this.clientKey, encryptedArrayBuffer.slice(this.ivLen));
+    return decrypt(
+      algorithm,
+      this.clientKey,
+      encryptedArrayBuffer.slice(this.ivLen)
+    );
   }
 
   decryptString(encryptedString) {

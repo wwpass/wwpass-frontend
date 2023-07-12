@@ -9,7 +9,6 @@ const removeLoader = (element) => {
   }
 };
 
-
 let haveStyleSheet = false;
 const setLoader = (element, styles) => {
   const loaderClass = `${styles.prefix || 'wwp_'}qrcode_loader`;
@@ -276,7 +275,6 @@ const addButtonStyleSheet = () => {
     haveButtonStyleSheet = true;
   }
 };
-
 
 const sameDeviceLogin = (
   parentElement,

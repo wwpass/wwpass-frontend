@@ -32,7 +32,7 @@ const getCallbackURL = (initialOptions = {}) => {
   return url;
 };
 
-const getUniversalURL = (initialOptions = {}, forQRCode) => {
+const getUniversalURL = (initialOptions = {}, forQRCode = false) => {
   const defaultOptions = {
     universal: false,
     operation: 'auth',

@@ -1,4 +1,4 @@
-const wait = (ms) => (ms ? (new Promise((r) => setTimeout(r, ms))) : Promise.resolve(null));
+const wait = (ms) => (ms ? (new Promise((r) => { setTimeout(r, ms); })) : Promise.resolve(null));
 
 const absolutePath = (href) => {
   const link = document.createElement('a');
@@ -7,9 +7,7 @@ const absolutePath = (href) => {
 };
 
 const concatBuffers = (...args) => {
-  const totalLen = args.reduce(
-    (accumulator, curentAB) => accumulator + curentAB.byteLength, 0
-  );
+  const totalLen = args.reduce((accumulator, curentAB) => accumulator + curentAB.byteLength, 0);
   let i = 0;
   const result = new Uint8Array(totalLen);
   while (args.length > 0) {

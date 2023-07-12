@@ -6,7 +6,6 @@ import { wwpassPasskeyAuth as passkeyAuth, pluginPresent, waitForRemoval } from 
 import { isClientKeyTicket } from './ticket';
 import { updateTicket } from './getticket';
 
-
 import { WWPASS_STATUS } from './constants';
 
 export {
