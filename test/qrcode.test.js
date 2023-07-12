@@ -41,7 +41,6 @@ beforeEach(() => {
   navigator.__defineGetter__('userAgent', () => UserAgent.DESKTOP);
   ticket = 'SP%20Name:scp:nonce@spfe.addr:1234';
   document.body.innerHTML = '<div id="qrcode"></div>';
-  global.document = document;
   global.fetch.mockClear();
   jest.useFakeTimers();
 });
