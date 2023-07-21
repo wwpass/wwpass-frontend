@@ -32,6 +32,8 @@ const getCallbackURL = (initialOptions = {}) => {
   return url;
 };
 
+const getCurrentDh = (w) => w.screen.height - w.innerHeight;
+
 const getUniversalURL = (initialOptions = {}, forQRCode = false) => {
   const defaultOptions = {
     universal: false,
@@ -40,7 +42,8 @@ const getUniversalURL = (initialOptions = {}, forQRCode = false) => {
     version: PROTOCOL_VERSION,
     ticket: undefined,
     callbackURL: undefined,
-    clientKey: undefined
+    clientKey: undefined,
+    dh: undefined
   };
 
   const options = { ...defaultOptions, ...initialOptions };
@@ -64,10 +67,16 @@ const getUniversalURL = (initialOptions = {}, forQRCode = false) => {
     url += `${encodeURIComponent(options.operation)}?t=${encodeURIComponent(options.ticket)}`;
   }
 
+  const dh = getCurrentDh(window) || 0;
+  if (dh) {
+    url += `&dh=${dh}`;
+  }
+
   return url;
 };
 
 export {
   getCallbackURL,
-  getUniversalURL
+  getUniversalURL,
+  getCurrentDh
 };

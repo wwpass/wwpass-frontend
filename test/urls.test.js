@@ -3,6 +3,8 @@ import {
   getUniversalURL
 } from '../src/urls';
 
+jest.spyOn(window.screen, 'height', 'get').mockReturnValue(window.innerHeight);
+
 test('getCallbackURL', () => {
   expect(getCallbackURL({
     ppx: 'wwp_',

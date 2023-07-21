@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import './crypto.mock';
 import { getUniversalURL } from '../src/urls';
 import open from '../src/open';
