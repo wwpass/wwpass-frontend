@@ -36,7 +36,8 @@ const redirectToWWPassApp = async (options, authResult) => {
     clientKey: key ? encodeClientNonce(key) : undefined,
     ppx: options.ppx,
     version: PROTOCOL_VERSION,
-    universal: options.universal || false
+    universal: options.universal || false,
+    dh: options.dh
   });
   authResult.linkElement.click();
 };

@@ -1,5 +1,5 @@
 import { isClientKeyTicket } from './ticket';
-import { getUniversalURL } from './urls';
+import { getCurrentDh, getUniversalURL } from './urls';
 import {
   encodeClientNonce
 } from './crypto';
@@ -15,6 +15,11 @@ const openWithTicket = (initialOptions) => new Promise((resolve) => {
   };
 
   let options = { ...defaultOptions, ...initialOptions };
+
+  const dh = getCurrentDh(window);
+  if (dh) {
+    options.dh = dh;
+  }
 
   if (isClientKeyTicket(options.ticket)) {
     generateClientNonce(options.ticket, options.ttl)

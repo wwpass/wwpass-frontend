@@ -7,6 +7,7 @@ import {
   redirectToWWPassApp,
   isMobile
 } from './mobile/auth';
+import { getCurrentDh } from './urls';
 
 /*
  * WWPass auth with mobile PassKey
@@ -36,6 +37,7 @@ const wwpassMobileAuth = async (initialOptions) => {
   };
   const options = { ...defaultOptions, ...initialOptions };
   options.qrcodeStyle = { ...defaultOptions.qrcodeStyle, ...initialOptions.qrcodeStyle };
+  options.dh = getCurrentDh(window) || 0;
 
   if (!options.ticketURL) {
     throw Error('ticketURL not found');
