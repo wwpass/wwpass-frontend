@@ -7,7 +7,6 @@ import { generateClientNonce } from './nonce';
 
 const openWithTicket = (initialOptions) => new Promise((resolve) => {
   const defaultOptions = {
-    ticket: '',
     ttl: 120,
     callbackURL: '',
     ppx: 'wwp_',
