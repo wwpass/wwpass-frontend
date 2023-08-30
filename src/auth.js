@@ -5,9 +5,13 @@ import {
   appAuth,
   qrCodeAndPasskeyAuth,
   redirectToWWPassApp,
-  isMobile
+  isMobile,
+  getTicket
 } from './mobile/auth';
 import { getCurrentDh } from './urls';
+import openWithTicket from './open';
+
+import { ticketAdapter } from './ticket';
 
 /*
  * WWPass auth with mobile PassKey
@@ -95,6 +99,14 @@ const wwpassMobileAuth = async (initialOptions) => {
   };
 };
 
+const getForceScheme = (universal = false, forceScheme = false) => {
+  if (forceScheme) {
+    return false;
+  }
+
+  return universal;
+};
+
 const authInit = (initialOptions) => {
   const defaultOptions = {
     ticketURL: '',
@@ -102,13 +114,42 @@ const authInit = (initialOptions) => {
     hw: false,
     ppx: 'wwp_',
     version: PROTOCOL_VERSION,
+    fastForward: false,
     log: () => {}
   };
 
-  const options = { ...defaultOptions, ...initialOptions };
+  const urlParams = new URLSearchParams(window.location.search);
+  const wwpassAppForceScheme = urlParams.get('wwpass_app_force_scheme');
+
+  const options = {
+    ...defaultOptions,
+    ...initialOptions,
+    ...{
+      universal: getForceScheme(initialOptions.universal, wwpassAppForceScheme)
+    }
+  };
+
   if (typeof (options.callbackURL) === 'string') {
     options.callbackURL = absolutePath(options.callbackURL);
   }
+
+  if (options.fastForward) {
+    // get search params
+
+    const wwpassAppForceAuth = urlParams.get('wwpass_app_force_auth') || false;
+    if (wwpassAppForceAuth) {
+      return getTicket(options.ticketURL)
+      .then((json) => {
+        const response = ticketAdapter(json);
+        const { ticket } = response;
+        options.ticket = ticket;
+        openWithTicket(options);
+
+        setTimeout(window.close, 5000);
+      });
+    }
+  }
+
   options.passkeyButton = (typeof options.passkey === 'string') ? document.querySelector(options.passkey) : options.passkey;
   options.qrcode = (typeof options.qrcode === 'string') ? document.querySelector(options.qrcode) : options.qrcode;
 
