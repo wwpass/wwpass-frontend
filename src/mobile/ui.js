@@ -282,7 +282,7 @@ const sameDeviceLogin = (
   ttl,
   showSwitch = true
 ) => new Promise((resolve) => {
-  const parentElement=options.qrcode;
+  const parentElement = options.qrcode;
 
   addButtonStyleSheet();
   const universalLinkElement = document.createElement('a');
@@ -310,15 +310,14 @@ const sameDeviceLogin = (
     e.preventDefault();
   });
 
-  if(options.mobileLoginExtraButtons && options.mobileLoginExtraButtons.length) {
-    for(let button of options.mobileLoginExtraButtons) {
+  if (options.mobileLoginExtraButtons && options.mobileLoginExtraButtons.length) {
+    for (const button of options.mobileLoginExtraButtons) {
       button.addEventListener('click', (e) => {
-              resolve({ away: true, linkElement: universalLinkElement });
-              e.preventDefault();
+        resolve({ away: true, linkElement: universalLinkElement });
+        e.preventDefault();
       });
     }
   }
-  
   const buttonContainer = document.createElement('div');
   buttonContainer.appendChild(universalLinkElement);
   if (showSwitch) {
