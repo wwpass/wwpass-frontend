@@ -61,7 +61,7 @@ describe('renderQRcode', () => {
   test('should create element anchor with click listener', async () => {
     // eslint-disable-next-line no-underscore-dangle, no-restricted-properties
     navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
-    const loginPromise = sameDeviceLogin(document.getElementById('qrcode'));
+    const loginPromise = sameDeviceLogin({qrcode: document.getElementById('qrcode')});
 
     const element = document.getElementById('qrcode').firstChild.firstChild;
     expect(element.tagName).toEqual('A');
@@ -75,7 +75,7 @@ describe('renderQRcode', () => {
   test('should create element anchor for switching to QR code', async () => {
     // eslint-disable-next-line no-underscore-dangle, no-restricted-properties
     navigator.__defineGetter__('userAgent', () => UserAgent.MOBILE);
-    const loginPromise = sameDeviceLogin(document.getElementById('qrcode'), {
+    const loginPromise = sameDeviceLogin({qrcode: document.getElementById('qrcode')}, {
       ticket: 'SP%20Name:sp:nonce@spfe.addr:1234',
       callbackURL: 'https://callback.url'
     }, 10);
