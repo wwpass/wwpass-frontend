@@ -311,8 +311,8 @@ const sameDeviceLogin = (
   });
 
   if (options.mobileLoginExtraButtons && options.mobileLoginExtraButtons.length) {
-    for (const button of options.mobileLoginExtraButtons) {
-      button.addEventListener('click', (e) => {
+    for (let i = 0; i < options.mobileLoginExtraButtons.length; i++) {
+      options.mobileLoginExtraButtons[i].addEventListener('click', (e) => {
         resolve({ away: true, linkElement: universalLinkElement });
         e.preventDefault();
       });
