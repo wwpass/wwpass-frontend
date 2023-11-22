@@ -277,11 +277,13 @@ const addButtonStyleSheet = () => {
 };
 
 const sameDeviceLogin = (
-  parentElement,
+  options,
   wwpassURLoptions,
   ttl,
   showSwitch = true
 ) => new Promise((resolve) => {
+  const parentElement=options.qrcode;
+
   addButtonStyleSheet();
   const universalLinkElement = document.createElement('a');
   universalLinkElement.className = 'wwpassLoginButton';
@@ -290,6 +292,7 @@ const sameDeviceLogin = (
   if (wwpassURLoptions) {
     universalLinkElement.href = getUniversalURL(wwpassURLoptions, false);
   } else universalLinkElement.href = '#';
+
   const qrCodeSwitchLink = document.createElement('a');
   if (showSwitch) {
     qrCodeSwitchLink.href = '#';
@@ -306,6 +309,16 @@ const sameDeviceLogin = (
     resolve({ away: true, linkElement: universalLinkElement });
     e.preventDefault();
   });
+
+  if(options.mobileLoginExtraButtons && options.mobileLoginExtraButtons.length) {
+    for(let button of options.mobileLoginExtraButtons) {
+      button.addEventListener('click', (e) => {
+              resolve({ away: true, linkElement: universalLinkElement });
+              e.preventDefault();
+      });
+    }
+  }
+  
   const buttonContainer = document.createElement('div');
   buttonContainer.appendChild(universalLinkElement);
   if (showSwitch) {

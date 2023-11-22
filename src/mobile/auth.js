@@ -52,7 +52,7 @@ const appAuth = (initialOptions) => {
     log: () => {}
   };
   const options = { ...defaultOptions, ...initialOptions };
-  return sameDeviceLogin(options.qrcode, null, null, true);
+  return sameDeviceLogin(options, null, null, true);
 };
 
 const qrCodeAuth = async (options, websocketPool) => {
